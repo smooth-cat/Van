@@ -1,0 +1,78 @@
+{
+	"name": "code-guide",
+	"description": "guide for fast read code",
+	"version": "0.0.1",
+	"publisher": "smooth-cat",
+	"private": true,
+	"license": "MIT",
+	"browser": "dist/index.js",
+	"distExt": "dist-ext/extension.js",
+	"repository": {
+		"type": "git",
+		"url": ""
+	},
+	"engines": {
+		"vscode": "^1.50.0"
+	},
+	"extensionKind": [
+		"ui",
+		"workspace"
+	],
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		
+	],
+	"main": "./dist-ext/extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"icon": "svelte-let.png",
+					"title": "code-guide",
+					"id": "code-guide"
+				}
+			]
+		},
+		"views": {
+			"code-guide": [
+				{
+					"type": "webview",
+					"id": "code-guide",
+					"name": "code-guide"
+				}
+			]
+		},
+		"commands": [
+		],
+		"menus": {
+			"view/title": [
+			
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p tsconfig.json",
+		"lint": "eslint . --ext .ts,.tsx",
+		"watch": "tsc -w -p tsconfig.json",
+		"dev": "rollup -cw"
+	},
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^11.0.2",
+		"@rollup/plugin-node-resolve": "^7.0.0",
+		"@types/vscode": "^1.50.0",
+		"@typescript-eslint/eslint-plugin": "^4.16.0",
+		"@typescript-eslint/parser": "^4.16.0",
+		"eslint": "^7.21.0",
+		"rollup": "^2.60.0",
+		"rollup-plugin-inject-process-env": "^1.3.1",
+		"rollup-plugin-typescript2": "^0.34.1",
+		"typescript": "^4.4.3"
+	},
+	"dependencies": {
+		"@vue/reactivity": "^3.5.12",
+		"watchable-proxy": "^2.0.8"
+	}
+}
