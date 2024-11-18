@@ -4,11 +4,11 @@ import { MsgType } from '../shared/var';
 import { docProcess } from './doc-process';
 import { findReferenceOnSelect } from './select';
 
-const { window } = vscode;
+const { window, workspace } = vscode;
 
 export function activate(context: vscode.ExtensionContext) {
 
-	const provider = new GuideViewProvider(context.extensionUri);
+	const provider = new GuideViewProvider(context.extensionUri, onResolved);
 
 	context.subscriptions.push(
 		// viewType 视图的唯一id。这应该与package.json中views贡献的id匹配
@@ -20,7 +20,20 @@ export function activate(context: vscode.ExtensionContext) {
 				provider.msg.emit(MsgType.DocSwitch, res);
 			})
 		}),
-		window.onDidChangeTextEditorSelection(findReferenceOnSelect)
+		// 切换选择 或 cursor移动
+		window.onDidChangeTextEditorSelection(findReferenceOnSelect),
+		// 文件内容改变
+		workspace.onDidChangeTextDocument((e) => {
+			
+		}),
+		// 删除项目文件
+		workspace.onDidDeleteFiles(() => {
+
+		}),
+		// 重命名项目文件
+		workspace.onDidRenameFiles(() => {
+
+		})
 		/**
 		 * 注册 cmd shift p 命令，与 package.contributes.commands 联动
 		 * provider 通过 postMessage 和 webview
@@ -28,6 +41,12 @@ export function activate(context: vscode.ExtensionContext) {
 		// vscode.commands.registerCommand('', () => {
 		// })
 	);
+
+	function onResolved(self: GuideViewProvider) {
+		this.msg.on(MsgType.Command, (data: [string]) => {
+			vscode.commands.executeCommand(...data)
+		})
+	}
 }
 
 class GuideViewProvider implements vscode.WebviewViewProvider {
@@ -36,6 +55,7 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
+		public onResolved?: (self: GuideViewProvider) => void,
 	) { }
 
 	public resolveWebviewView(
@@ -54,7 +74,6 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 				this._extensionUri
 			]
 		}; 
-		console.log('abc');
 		
 		webview.html = this._getHtmlForWebview(webview);
 		
@@ -63,6 +82,7 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 			(fn) => webview.onDidReceiveMessage((msg) => fn(msg)),
 		)
 
+		this.onResolved?.(this);
 	}
 
 	msg: Message = {} as any;
