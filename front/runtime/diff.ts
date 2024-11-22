@@ -105,7 +105,6 @@ export const reuseFCBeginWork = (node: IEl) => {
 		if(!Object.is(value, prevVal)) {
 			propsChanged = true;
 			changedProps[key] = value;
-			break;
 		}
 	}
 
@@ -126,7 +125,9 @@ export const reuseFCBeginWork = (node: IEl) => {
 	// 先更新 props 再触发函数
 	cmp.update(node, propsChanged ? changedProps : undefined);
 
-	propsHooks.forEach(fn => fn(changedProps, prevProps))
+	if(propsChanged) {
+		propsHooks.forEach(fn => fn(changedProps, prevProps))
+	}
 	
 	cmp.renderEffect.run();
 	nodeOpr.diffChildren(prev, node);
@@ -251,8 +252,24 @@ export const nodeOpr = {
 			prevVal && dom.removeEventListener(key.slice(2), prevVal)
 			value && dom.addEventListener(key.slice(2), value, { signal });
 		} else {
-			dom.setAttribute(key, value == null ? '' : value.toString());
+			if(key === 'style') {
+				this.setDomStyle(dom, value);
+			} else {
+				dom.setAttribute(key, value == null ? '' : value.toString());
+			}
 		}
+	},
+	setDomStyle(dom: HTMLElement, value: string) {
+		value.split(';').forEach((str) => {
+			let [key, value] = str.split(':');
+			if(key == null || value == null) return;
+
+			key = key.trim();
+			value = value.trim();
+			if(key && value) {
+				dom.style[key] = value;
+			}
+		})
 	},
   assign(a: IEl, b: IEl) {
     ['type', 'props', 'data'].forEach(k => (a[k] = b[k]));

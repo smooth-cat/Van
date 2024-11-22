@@ -1,7 +1,12 @@
 import { getData } from "../runtime/global";
 
+export type AsyncState<T> = {
+	value: T,
+	error: any,
+	loading: boolean,
+}
 
-export function useAsync(key: string, fn: () => Promise<any>) {
+export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: string, fn: T) {
 	const data = getData();
 	let state: any = {
 		value: undefined,
@@ -13,11 +18,11 @@ export function useAsync(key: string, fn: () => Promise<any>) {
 	state = data[key];
 	
 	let count = 0;
-	const run = () => {
+	const run = (...args: Parameters<T>) => {
 		state.loading = true;
 		count++;
 		const memoCount = count;
-    fn().then(
+    return fn(...args).then(
 			value => {
 				// 如果 count 不同说明这个异步结果失效了
 				if(count !== memoCount) return;
@@ -31,5 +36,5 @@ export function useAsync(key: string, fn: () => Promise<any>) {
       }
     );
   };
-	return run;
+	return run as T;
 }

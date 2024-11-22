@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
+import * as action from './action/index';
 import { Message } from '../shared/message/index';
-import { MsgType } from '../shared/var';
-import { docProcess } from './doc-process';
-import { findReferenceOnSelect } from './select';
+import { MsgType, ReqType } from '../shared/var';
+import { emitSelectOrCursorChange } from './event-pre-process/select';
+import { debounce } from '../shared/utils';
 
 const { window, workspace } = vscode;
+
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -15,24 +17,24 @@ export function activate(context: vscode.ExtensionContext) {
 		window.registerWebviewViewProvider('code-guide', provider),
 		// 切换当前编辑文件
 		window.onDidChangeActiveTextEditor(event => {
-			const document = event?.document || window.activeTextEditor?.document;
-			docProcess(document as any).then((res) => {
-				provider.msg.emit(MsgType.DocSwitch, res);
-			})
+			const { uri } = event?.document || window.activeTextEditor?.document || {};
+			if(uri) {
+				provider.msg.emit(MsgType.DocSwitch, uri);
+			}
 		}),
 		// 切换选择 或 cursor移动
-		window.onDidChangeTextEditorSelection(findReferenceOnSelect),
+	window.onDidChangeTextEditorSelection((e) => emitSelectOrCursorChange(e, provider.msg)),
 		// 文件内容改变
-		workspace.onDidChangeTextDocument((e) => {
-			
-		}),
+		workspace.onDidChangeTextDocument(debounce((e) => {
+			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri })
+		})),
 		// 删除项目文件
-		workspace.onDidDeleteFiles(() => {
-
+		workspace.onDidDeleteFiles((e) => {
+			provider.msg.emit(MsgType.DeleteFile, { uris: e.files });
 		}),
 		// 重命名项目文件
-		workspace.onDidRenameFiles(() => {
-
+		workspace.onDidRenameFiles((e) => {
+			provider.msg.emit(MsgType.RenameFile, { uris: e.files });
 		})
 		/**
 		 * 注册 cmd shift p 命令，与 package.contributes.commands 联动
@@ -43,8 +45,42 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	function onResolved(self: GuideViewProvider) {
-		this.msg.on(MsgType.Command, (data: [string]) => {
-			vscode.commands.executeCommand(...data)
+		eval(`console.log('成功eval')`)
+
+		self.msg.onReq(ReqType.Command, async(res, data: any[]) => {
+			const [name, ...args] = data;
+			try {
+				const result = action[name](...args);
+				if(result instanceof Promise) {
+					result.then((v) => {
+						res.send({ data: v });
+					})
+				} else {
+					res.send({ data: result });
+				}
+			} catch (error) {
+				res.send({ error: error ?? 'unknown error' });
+			}
+		});
+
+		self.msg.onReq(ReqType.Eval, async(res, data: string) => {
+			console.log('接到eval指令', data);
+			try {
+				const result = eval(data);
+				if(result instanceof Promise) {
+					result.then((v) => {
+						res.send({ data: v });
+					})
+				} else {
+					res.send({ data: result });
+				}
+			} catch (error) {
+				res.send({ error: error ?? 'unknown error' });
+			}
+		});
+
+		self.msg.onReq('', (res, data) => {
+
 		})
 	}
 }
@@ -97,9 +133,7 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 		const scriptUri = this.getSrc('index.js');
 		// Do the same for the stylesheet.
-		const styleResetUri = this.getSrc('reset.css')
-		const styleVSCodeUri = this.getSrc('vscode.css')
-		const styleMainUri = this.getSrc('main.css')
+		const cssUri = this.getSrc('index.css')
 
 		// Use a nonce to only allow a specific script to be run.
 		const nonce = getNonce();
@@ -114,7 +148,7 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 				-->
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<link href="" rel="stylesheet">
+				<link href="${cssUri}" rel="stylesheet">
 				<title>Cat Colors</title>
 			</head>
 			<body>

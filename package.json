@@ -21,9 +21,7 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [
-		
-	],
+	"activationEvents": [],
 	"main": "./dist-ext/extension.js",
 	"contributes": {
 		"viewsContainers": {
@@ -44,12 +42,9 @@
 				}
 			]
 		},
-		"commands": [
-		],
+		"commands": [],
 		"menus": {
-			"view/title": [
-			
-			]
+			"view/title": []
 		}
 	},
 	"scripts": {
@@ -66,8 +61,11 @@
 		"@typescript-eslint/eslint-plugin": "^4.16.0",
 		"@typescript-eslint/parser": "^4.16.0",
 		"eslint": "^7.21.0",
+		"less": "^4.2.0",
+		"postcss": "^8.4.49",
 		"rollup": "^2.60.0",
 		"rollup-plugin-inject-process-env": "^1.3.1",
+		"rollup-plugin-postcss": "^4.0.2",
 		"rollup-plugin-typescript2": "^0.34.1",
 		"typescript": "^4.4.3"
 	},

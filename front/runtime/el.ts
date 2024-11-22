@@ -42,7 +42,7 @@ export function text(value: any, $children: IEl[]=[]): IEl {
 
 	return $;
 }
-export function el(type: string, props: Record<any, any>= {}, $children: IEl[]=[]): IEl {
+export function el(type: string, props: Record<any, any>= {}, $children: any[]=[]): IEl {
 	const $: IEl = {
 		$type: type,
 		props,
@@ -117,7 +117,7 @@ function clear(this: IEl, opt: ClearOpt = {}) {
 	}
 
 	if(this.FC) {
-		console.log('fc clear', this.FC);
+		// console.log('fc clear', this.FC);
 		
 		this.FC.clear();
 		this.FC = undefined;
@@ -143,7 +143,7 @@ function clear(this: IEl, opt: ClearOpt = {}) {
 	this.owner = undefined;
 	this.newDoms.clear();
 	this.newDoms = undefined as any;
-	console.log('clear el', this.dom ? this.dom : this);
+	// console.log('clear el', this.dom ? this.dom : this);
 }
 
 function firstDom(this: IEl) {

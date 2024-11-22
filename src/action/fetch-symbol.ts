@@ -1,13 +1,21 @@
-import { commands, DocumentSymbol, TextDocument } from "vscode";
-import { dfs, pick } from "../shared/utils";
+import { commands, DocumentSymbol, TextDocument, TextEditor, Uri, window } from "vscode";
+import { dfs, pick } from "../../shared/utils";
 
-export async function docProcess(doc: TextDocument) {
+export async function fetchSymbol(uri?: Uri) {
+	uri = window.activeTextEditor?.document?.uri;
+	if (!uri) {
+    console.log('当前无打开的文件');
+    return;
+  }
+
+	uri = Uri.from(uri);
+	
+	// TODO: 参数修改为 uri 通过 Uri.from 重新构建 
 	try {
 		const docSymbols = (await commands.executeCommand<DocumentSymbol[]>(
 			'vscode.executeDocumentSymbolProvider',
-			doc.uri,
+			uri,
 		)) || [];
-		
 		
 		const root = {
 			children: docSymbols,

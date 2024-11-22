@@ -4,6 +4,7 @@ import RollupTypescript from 'rollup-plugin-typescript2'
 import pkg from './package.json';
 import NodePath from 'path'
 import injectProcessEnv from 'rollup-plugin-inject-process-env';
+import postcss from 'rollup-plugin-postcss'
 const resolveFile = path => NodePath.resolve(__dirname, path);
 const bigCamel = (name) => name.split('-').map(it => it[0].toUpperCase() + it.slice(1)).join(''); 
 
@@ -19,6 +20,11 @@ export default [
 		plugins: [
 			resolve(), // so Rollup can find `ms`
 			commonjs(), // so Rollup can convert `ms` to an ES module
+			postcss({
+				extract: true,
+				// Or with custom file name
+				extract: NodePath.resolve('dist/index.css')
+			}),
 			RollupTypescript({
 				tsconfig: resolveFile('tsconfig.rollup.json')
 			}),
