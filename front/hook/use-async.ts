@@ -36,5 +36,12 @@ export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: strin
       }
     );
   };
-	return run as T;
+
+	const reset = () => {
+		state.value = undefined;
+		state.error = undefined;
+		state.loading = false;
+	}
+
+	return [run as T, reset];
 }

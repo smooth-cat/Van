@@ -10,15 +10,18 @@ import { Node } from '../components/node';
 export type Props = {};
 type Data = {
   tree: AsyncState<DocNode[]>;
+	uri: Uri
 };
 
 export const Outline: FC<Data, Props> = (data, props) => {
-  const run = useAsync('tree', async (uri?: Uri) => {
-    const res = await msg.request(
+  const [run] = useAsync('tree', async (uri?: Uri) => {
+    const res = await msg.request<DocNode[]>(
       ReqType.Command,
       ['fetchSymbol', uri]
     );
     if (Array.isArray(res.data)) {
+			const first = res.data[0];
+			data.uri = first.location.uri;
       return res.data;
     }
   });
@@ -30,7 +33,7 @@ export const Outline: FC<Data, Props> = (data, props) => {
   return () => {
     console.log('treeValue', data);
 
-    const { tree } = data;
+    const { tree, uri } = data;
     return [
       el('div', {}, [
         tree.loading
@@ -39,7 +42,7 @@ export const Outline: FC<Data, Props> = (data, props) => {
             el(
               'div',
               {},
-              tree.value.map(dt => fn(Node, { value: dt }))
+              tree.value.map(dt => fn(Node, { value: dt, uri }))
             )
       ])
     ];

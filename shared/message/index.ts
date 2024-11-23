@@ -43,8 +43,8 @@ export class Message {
   reqId = 0;
 	reqSubMap = new Map<string, (res: Res, data: any) => void>();
   idToPromise = new Map<number, ExtPromise<ResDt>>();
-  request = (type: string, data: any) => {
-    const promise = new ExtPromise<ResDt>();
+  request = <T = any>(type: string, data: any) => {
+    const promise = new ExtPromise<ResDt<T>>();
 		this.reqId++;
     this.emit(MsgType.Request, { reqType: type, reqData: data, reqId: this.reqId });
     this.idToPromise.set(this.reqId, promise as any);
@@ -83,8 +83,8 @@ class Res {
   }
 }
 
-export type ResDt = {
-	data: any, error: any 
+export type ResDt<T = any> = {
+	data: T, error: any 
 }
 // webview
 // const vscode = acquireVsCodeApi();

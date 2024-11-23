@@ -1,4 +1,4 @@
-import { DocumentSymbol } from "vscode";
+import { DocumentSymbol, Location, Position, Range, Uri } from "vscode";
 
 export enum MsgType {
 	DocSwitch = 'DocSwitch',
@@ -16,6 +16,21 @@ export enum ReqType {
 	Eval = 'Eval'
 }
 
-export type DocNode = Pick<DocumentSymbol, 'name' | 'range' | 'kind'> & {
+
+export type IRange = [Position, Position]
+
+export type Loc = {
+	uri: Uri,
+	range: IRange,
+}
+
+export type Reference = Loc & {
+	wholeText: string;
+	lineText: string;
+}
+
+export type DocNode = Pick<DocumentSymbol, 'name' | 'kind'> & {
 	children: DocNode[],
+	location: Loc,
+	range: IRange,
 }

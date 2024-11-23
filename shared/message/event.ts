@@ -46,7 +46,7 @@ export class BaseEvent {
 
 	// construct 会初始化为下面其中一种
 	emit = (type: string, ...args: any[]) => {
-		EventMode.Immediate ? this.emitImmediate(type, ...args) : this.emitQueue(type, ...args);
+		this.opt.mode === EventMode.Immediate ? this.emitImmediate(type, ...args) : this.emitQueue(type, ...args);
 	}
 	emitImmediate(type: string, ...args: any[]) {
 		const fns = this.subMap.get(type);
@@ -55,6 +55,7 @@ export class BaseEvent {
 		allSub?.forEach((it) => this.callSub(it, allSub, args));
 	}
 	emitQueue(type: string, ...args: any[]) {
+		// TODO: 不触发
 		this.eventQueue.push({ type, args });
 		this.processQueue();
 	}
