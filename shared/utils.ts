@@ -64,4 +64,37 @@ export const debounce = <T extends Function>(fn: T, timeout = 300) => {
 	}) as unknown as T;
 }
 
+type ISortBy = {
+	<T = any, V = any, K = any>(arr: T[], cb: (it:T, i: number, arr: T[]) => V) : [V, T[]][];
+	<T = any, V = any, K = any>(arr: T[], cb: (it:T, i: number, arr: T[]) => V, key?: (it:T, i: number, arr: T[]) => K) : [K, T[]][];
+}
 
+ export const sortBy: ISortBy = <T = any, V = any, K = any>(arr: T[], cb: (it:T, i: number, arr: T[]) => V, key?: (it:T, i: number, arr: T[]) => K) => {
+	const map = new Map<V,T[]>();
+	const keyMap = new Map<V, K>();
+	for (let i = 0; i <arr.length; i++) {
+		const it = arr[i];
+		const res = cb(it, i, arr);
+		if(key) {
+			const k = key(it, i, arr);
+			if(!keyMap.has(res)) {
+				keyMap.set(res, k);
+			}
+		}
+
+		let list = map.get(res);
+		if(!list) {
+			list = [];
+			map.set(res, list);
+		} 
+		list.push(it);
+	}
+
+	const list: any[] = []
+	map.forEach((value, res) => {
+    const k = key ? keyMap.get(res) : res;
+    list.push([k, value]);
+  });
+	
+	return list;
+ }

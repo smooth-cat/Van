@@ -215,6 +215,11 @@ export const reuseElCpWork = (node: IEl) => {
     }
   }
 
+	// 拷贝 __$_ref_cb 回调函数用于删除
+	if(prevNode.props['__$_ref_cb']) {
+		node.props['__$_ref_cb'] = prevNode.props['__$_ref_cb'];
+	}
+
 	addPatchBag(patcher)
 
 	node.dom = prevNode.dom;
@@ -248,6 +253,17 @@ export const nodeOpr = {
 	setDomProps(node: IEl, key: string, value: any, prevVal?: any) {
 		const dom = node.dom as HTMLElement;
 		const signal = node.owner?.abortCon.signal;
+		if(key === 'ref') {
+			// 新建元素触发的
+			if(!prevVal && typeof value === 'function') {
+				const cb = value(dom);
+				if(typeof cb === 'function') {
+					node.props['__$_ref_cb'] = cb;
+				}
+			}
+			return;
+		}
+
 		if(key.indexOf('on') === 0) {
 			prevVal && dom.removeEventListener(key.slice(2), prevVal)
 			value && dom.addEventListener(key.slice(2), value, { signal });

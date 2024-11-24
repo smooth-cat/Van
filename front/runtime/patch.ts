@@ -52,6 +52,7 @@ function handleAddDelMove (patchSet: Patch[]) {
 		const { data, type } = patchSet[i];
 		let node: IEl = data
 		if(type === PatchType.Del) {
+			// TODO: 考虑如何执行 __$_ref_cb，目前获取不到 dom 对应 node
 			loopChildrenDom(node, (dom) => {
 				dom.remove?.();
 			})

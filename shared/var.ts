@@ -1,4 +1,8 @@
-import { DocumentSymbol, Location, Position, Range, Uri } from "vscode";
+import { DocumentSymbol, Location, Position, Range, Uri as RawUri } from "vscode";
+
+type Uri = RawUri & {
+	relativePath: string;
+}
 
 export enum MsgType {
 	DocSwitch = 'DocSwitch',
@@ -25,8 +29,20 @@ export type Loc = {
 }
 
 export type Reference = Loc & {
-	wholeText: string;
+	name: string;
 	lineText: string;
+}
+
+export type Define = Reference & {
+	/** 包含声明关键字的字符串 */
+	declaration: string;
+};
+
+export type FileRef = [Uri, Reference[]];
+
+export type FetchRefRes = {
+	define: Define,
+	fileRefs: FileRef[],
 }
 
 export type DocNode = Pick<DocumentSymbol, 'name' | 'kind'> & {
