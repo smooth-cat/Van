@@ -1,8 +1,11 @@
 const path = require('path');
 module.exports = {
 	target: 'node18.12',
+	optimization: {
+    minimize: process.env.ENV !== 'dev',
+  },
 	output: {
-    path: path.resolve(__dirname, '../dist-ext'),
+    path: path.resolve(__dirname, './dist-ext'),
 		filename: 'extension.js',
 		library: {
       type: 'commonjs',
@@ -14,7 +17,7 @@ module.exports = {
 	entry: './src/extension.ts',
   resolve: {
     tsConfig: {
-      configFile: path.resolve(__dirname,  '../tsconfig.rollup-src.json'),
+      configFile: path.resolve(__dirname,  './tsconfig.rollup-src.json'),
     },
     extensions: ['...', '.ts'],
   },

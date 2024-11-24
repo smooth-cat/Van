@@ -2,11 +2,14 @@ const path = require('path');
 const rspack = require('@rspack/core');
 
 module.exports = {
+	optimization: {
+    minimize: process.env.ENV !== 'dev',
+  },
 	experiments: {
     css: true,
   },
 	output: {
-    path: path.resolve(__dirname, '../dist'),
+    path: path.resolve(__dirname, './dist'),
 		filename: 'index.js',
 		library: {
 			name: 'CodeGuide',
@@ -19,7 +22,7 @@ module.exports = {
 	entry: './front/index.ts',
   resolve: {
     tsConfig: {
-      configFile: path.resolve(__dirname,  '../tsconfig.rollup.json'),
+      configFile: path.resolve(__dirname,  './tsconfig.rollup.json'),
     },
     extensions: ['...', '.ts'],
   },

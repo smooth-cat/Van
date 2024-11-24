@@ -53,7 +53,7 @@
 		"lint": "eslint . --ext .ts,.tsx",
 		"watch": "tsc -w -p tsconfig.json",
 		"dev": "npm run clean && npm run pack",
-		"pack": "rspack build -c ./front/rspack.config.js & rspack build -c ./src/rspack.config.js",
+		"pack": "ENV=dev rspack build -c ./rspack.config.js & ENV=dev rspack build -c ./rspack.config-src.js",
 		"clean": "rimraf dist && rimraf dist-ext"
 	},
 	"devDependencies": {
