@@ -3,20 +3,28 @@ import { diff, nodeOpr } from "./diff";
 import { el, fn, IEl, train } from "./el";
 import { Func } from "./type";
 import { FlushStatus, getVar, setVar } from "./global";
-import { processPatchList } from "./patch";
+import { loopChildrenDom, processPatchList } from "./patch";
 
-export let ROOT: IEl;
-
+export const ROOTS = new Set<IEl>();
+window['roots'] = ROOTS;
 
 export const render = (app: IEl, dom: HTMLElement) => {
-	ROOT = el('root', {}, [app]);
+	const ROOT = el('root', {}, [app]);
 	ROOT.dom = dom;
-	window['root'] = ROOT;
+	ROOTS.add(ROOT);
 	diff(null, app);
-	console.log('渲染完成', window['root']);
-	
+	console.log('渲染完成', window['roots']);
+	return ROOT;
 }
 
+export const unmount = (ROOT: IEl) => {
+	const app = ROOT.child;
+	loopChildrenDom(app!, (dom) => {
+		dom.remove();
+	});
+	ROOT.clear?.();
+	ROOTS.delete(ROOT);
+}
 
 const p = Promise.resolve();
 // TODO: propsChanged 测试

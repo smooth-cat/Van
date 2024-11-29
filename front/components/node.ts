@@ -18,8 +18,8 @@ export const Node: FC<Data, Props> = (data, props) => {
 
 
 	const clickDetailBtn = () => {
-		const { value: { range }, uri } = props;
-		Events.emit('open-detail', range[0], uri);
+		const { value: { range, name }, uri } = props;
+		Events.emit('open-detail', range[0], uri, name);
 	}
 
 	return () => {

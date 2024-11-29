@@ -3,7 +3,7 @@ import { diff, nodeOpr } from "./diff";
 import { fn, IEl } from "./el";
 import { __Internal_Event__ } from "./global";
 import { findParentAndSib, loopChildrenDom } from "./patch";
-import { ROOT } from "./render";
+import { ROOTS } from "./render";
 import { Func } from "./type";
 
 export function useHmr() {
@@ -11,16 +11,19 @@ export function useHmr() {
 	
 		const replaceCouples: [IEl, Func][] = [];
 	
-		dfs(ROOT, (el) => {
-			if(typeof el.$type === 'string') return;
-			const hmrId = el.$type['hmrId'];
-			const i = newTypeList.findIndex((it) => it.hmrId === hmrId);
-			if(!~i) return;
-	
-			const newType = newTypeList[i];
-			replaceCouples.push([el, newType]);
-			return true;
-		}, (el) => {});
+		ROOTS.forEach((ROOT) => {
+			dfs(ROOT, (el) => {
+				if(typeof el.$type === 'string') return;
+				const hmrId = el.$type['hmrId'];
+				const i = newTypeList.findIndex((it) => it.hmrId === hmrId);
+				if(!~i) return;
+		
+				const newType = newTypeList[i];
+				replaceCouples.push([el, newType]);
+				return true;
+			}, (el) => {});
+		})
+
 	
 		if(replaceCouples.length === 0) {
 			// 修改的内容和组件无关，则刷新页面

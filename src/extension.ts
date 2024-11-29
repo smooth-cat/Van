@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}),
 		// 切换选择 或 cursor移动
-	window.onDidChangeTextEditorSelection((e) => emitSelectOrCursorChange(e, provider.msg)),
+		window.onDidChangeTextEditorSelection((e) => emitSelectOrCursorChange(e, provider.msg)),
 		// 文件内容改变
 		workspace.onDidChangeTextDocument(debounce((e) => {
 			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri })
@@ -114,7 +114,8 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 		webview.html = this._getHtmlForWebview(webview);
 		
 		this.msg = new Message(
-			(msg) => webview.postMessage(msg) ,
+			(msg) => { console.log('编辑器事件', msg);
+			 webview.postMessage(msg)} ,
 			(fn) => webview.onDidReceiveMessage((msg) => fn(msg)),
 		)
 

@@ -29,8 +29,8 @@ export const emitSelectOrCursorChange = async (e: TextEditorSelectionChangeEvent
 	if(isCursorMove(active, anchor)) {
 		// if(e.kind !== TextEditorSelectionChangeKind.Mouse) return;
 		// 有 4 种： 0.鼠标 1.键盘 2.代码片段等 3.其他系统前进后退指令
-		msg.emit(MsgType.CursorMove, {...active, uri, kind: e.kind });
-		console.log('CursorMove',e, {...active, uri});
+		msg.emit(MsgType.CursorMove, {pos: active, uri, kind: e.kind });
+		console.log('CursorMove',e, {pos: active, uri});
 		return;
 	}
 	

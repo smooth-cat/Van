@@ -51,3 +51,18 @@ export type DocNode = Pick<DocumentSymbol, 'name' | 'kind'> & {
 	location: Loc,
 	range: IRange,
 }
+
+export enum TextEditorSelectionChangeKind {
+	/**
+	 * Selection changed due to typing in the editor.
+	 */
+	Keyboard = 1,
+	/**
+	 * Selection change due to clicking in the editor.
+	 */
+	Mouse = 2,
+	/**
+	 * Selection changed because a command ran.
+	 */
+	Command = 3
+}
