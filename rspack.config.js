@@ -2,6 +2,20 @@ const path = require('path');
 const rspack = require('@rspack/core');
 
 module.exports = {
+	devServer: {
+    allowedHosts: 'all',
+		/** 允许跨域 */
+		headers: {
+			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+			"Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization"
+		},
+		host: '127.0.0.1',
+		port: 8080,
+		hot: true,
+		// watchFiles: ['front/**/*'],
+		// liveReload: true,
+  },
 	optimization: {
     minimize: process.env.ENV !== 'dev',
   },
@@ -19,14 +33,22 @@ module.exports = {
 	externals: {
     vscode: 'vscode',
   },
-	entry: './front/index.ts',
+	entry: {
+		index: {
+      import: ['./front/reload.ts', './front/index.ts'],
+    }
+	},
   resolve: {
     tsConfig: {
       configFile: path.resolve(__dirname,  './tsconfig.rollup.json'),
     },
     extensions: ['...', '.ts'],
   },
-  plugins: [],
+  plugins: [
+		new rspack.DefinePlugin({
+			'ENV': JSON.stringify(process.env.ENV),
+		})
+	],
   module: {
     rules: [
       {
@@ -42,6 +64,9 @@ module.exports = {
               },
             },
           },
+					{
+						loader: path.resolve('./front/hmr-loader.js')
+					},
         ],
       },
 			{

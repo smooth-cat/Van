@@ -118,14 +118,24 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 			(fn) => webview.onDidReceiveMessage((msg) => fn(msg)),
 		)
 
+		this.msg.on(MsgType.Reload, () => {
+			console.log('收到reload');
+			
+			webview.html = this._getHtmlForWebview(webview);
+		})
+
 		this.onResolved?.(this);
 	}
 
 	msg: Message = {} as any;
 
 
-	private getSrc = (...paths: string[]) => {
-		return this._view?.webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'dist', ...paths));
+	private getSrc = (path: string) => {
+		// @ts-ignore
+		if(ENV === 'dev') {
+			return `http://127.0.0.1:8080/${path}`;
+		}
+		return this._view?.webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'dist', path));
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
@@ -146,9 +156,11 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
 				-->
+				<!--
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+				-->
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<link href="${cssUri}" rel="stylesheet">
+				<link nonce="${nonce}" href="${cssUri}" rel="stylesheet">
 				<title>Cat Colors</title>
 			</head>
 			<body>

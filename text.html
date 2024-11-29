@@ -3,18 +3,26 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="http://127.0.0.1:8080/index.css" rel="stylesheet">
 	<title>Document</title>
-	<script>Element.prototype.insertBefore = (function (raw) {
+	<!-- <script>Element.prototype.insertBefore = (function (raw) {
 		// @ts-ignore
 		return function (...args) {
 			console.log(args[0],'插入到', args[1] ,'之前');
 			Function.prototype.call.call(raw, this, ...args)
 			// raw(...args);
 		}
-	})(Element.prototype.insertBefore)</script>
+	})(Element.prototype.insertBefore)</script> -->
+	<script> window.location.reload = ((raw) => {
+		return function(...args) {
+			debugger;
+			
+			Function.prototype.call.call(raw, this, ...args)
+		}
+	})(window.location.reload) </script>
 </head>
 <body>
-	<div id="app"></div>
-	<script src="./dist/index.js"></script>
+	<div id='app' ></div>
+	<script src="http://127.0.0.1:8080/index.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+import { BaseEvent } from "../../shared/message/event";
 import { IEl } from "./el";
 import { Component } from "./fc";
 import { PriorityQueue } from "./priority-queue";
@@ -30,3 +31,7 @@ export function setVar(k:Key, v: any) {
 }
 
 export const getData = () => Var.curInitFC?.data as any;
+
+export const __Internal_Event__ = new BaseEvent();
+
+window['__Internal_Event__'] = __Internal_Event__;

@@ -2,7 +2,7 @@ import { Message } from "../../shared/message";
 import { BaseEvent } from "../../shared/message/event";
 
 // @ts-ignore
-export const vscode = acquireVsCodeApi();
+export const vscode = globalThis.acquireVsCodeApi ? acquireVsCodeApi() : { postMessage: (msg) =>  console.log('模拟postMessage',msg)};
 
 export const msg = new Message(
 	(msg) => vscode.postMessage(msg),

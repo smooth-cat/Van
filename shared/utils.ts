@@ -58,7 +58,7 @@ export const debounce = <T extends Function>(fn: T, timeout = 300) => {
 			timer = null;
 		}
 		timer = setTimeout(() => {
-			fn.call(this, ...args);
+			fn?.call(this, ...args);
 			timer = null;
 		}, timeout);
 	}) as unknown as T;

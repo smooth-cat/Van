@@ -13,6 +13,8 @@ export const render = (app: IEl, dom: HTMLElement) => {
 	ROOT.dom = dom;
 	window['root'] = ROOT;
 	diff(null, app);
+	console.log('渲染完成', window['root']);
+	
 }
 
 
@@ -37,27 +39,28 @@ function flush() {
 		const parent = prev.parent;
 		const childI = prev.index;
 		diff(prev, curr);
-
+		nodeOpr.replaceNode(parent, childI, curr)
 		// 更新完的 dom 替换旧的
-		if(parent != null && childI != null) {
-			curr.index = childI;
-			const children = parent.$children;
-			children[childI] = curr;
-			curr.parent = parent;
+		// if(parent != null && childI != null) {
+		// 	curr.index = childI;
+		// 	const children = parent.$children;
+		// 	children[childI] = curr;
+		// 	curr.parent = parent;
 
-			if(childI === 0) {
-				parent.child = curr;
-			}
+		// 	if(childI === 0) {
+		// 		parent.child = curr;
+		// 	}
 
-			const before = children[childI-1];
-			const after = children[childI+1];
+		// 	const before = children[childI-1];
+		// 	const after = children[childI+1];
 
 			
-			before && (before.sibling = curr);
-			after && (curr.sibling = after);
-		}
+		// 	before && (before.sibling = curr);
+		// 	after && (curr.sibling = after);
+		// }
 	}
 	// 完成后处理所有 Patch 补丁
 	processPatchList()
 	setVar('flushStatus', FlushStatus.None);
+	console.log('渲染完成', window['root']);
 }

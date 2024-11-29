@@ -1,4 +1,5 @@
 const path = require('path');
+const rspack = require('@rspack/core');
 module.exports = {
 	target: 'node18.12',
 	optimization: {
@@ -21,7 +22,11 @@ module.exports = {
     },
     extensions: ['...', '.ts'],
   },
-  plugins: [],
+  plugins: [
+		new rspack.DefinePlugin({
+			'ENV': JSON.stringify(process.env.ENV),
+		})
+	],
   module: {
     rules: [
       {

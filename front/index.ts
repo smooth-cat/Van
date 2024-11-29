@@ -1,8 +1,6 @@
-import { reactive, ref } from "@vue/reactivity"
-import { el, fn, text } from "./runtime/el"
+import { fn } from "./runtime/el"
 import { render } from "./runtime/render"
 import { App } from "./page/app"
-
-import { Message } from '../shared/message/index';
-
+import { useHmr } from "./runtime/hmr";
+useHmr();
 render(fn(App), document.getElementById('app')!)

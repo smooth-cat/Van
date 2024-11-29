@@ -456,7 +456,27 @@ export const nodeOpr = {
 
     patchMixDel(patcher, prevKeyMap, prevList);
     addPatchBag(patcher);
-  }
+  },
+	replaceNode(parent: IEl|undefined, childI: number|undefined, curr: IEl) {
+		// 更新完的 dom 替换旧的
+		if(parent != null && childI != null) {
+			curr.index = childI;
+			const children = parent.$children;
+			children[childI] = curr;
+			curr.parent = parent;
+
+			if(childI === 0) {
+				parent.child = curr;
+			}
+
+			const before = children[childI-1];
+			const after = children[childI+1];
+
+			
+			before && (before.sibling = curr);
+			after && (curr.sibling = after);
+		}
+	}
 };
 
 

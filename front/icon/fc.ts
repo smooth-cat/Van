@@ -11,8 +11,10 @@ export const Icon = (data, props) => {
 	return () => {
 		const { i, ...divProps } = props;
 		const extClass = divProps.class ? divProps.class + ' icon-wrap' : 'icon-wrap';
+		let style = props.size ? `font-size: ${props.size}px` : ''
+
 		return [
-			el('div', { ref, ...divProps, class: extClass, style: `font-size: ${props.size}px` })
+			el('div', { ref, ...divProps, class: extClass, style })
 		]
 	}
 }

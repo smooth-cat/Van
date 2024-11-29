@@ -63,7 +63,7 @@ export const Detail: FC<any, Props> = (data, props) => {
 					text(define.name),
 					fn(Icon, { class: 'close', i: iClose, size: 30, onclick: close })
 				]),
-        el('div', { class: 'define' }, [
+        el('div', { class: 'define1' }, [
 					el('div', { class: 'file-path' }, [text(define.uri.relativePath)]),
 					el('div',  { class: 'ref-item' }, [text(define.declaration)])
 				]),

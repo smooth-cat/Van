@@ -1,14 +1,10 @@
-import { Message } from "../../shared/message";
-import { MsgType, ReqType } from "../../shared/var";
-import { useAsync } from "../hook/use-async"
-import { el, fn, text } from "../runtime/el";
-import { vscode } from "../util/var";
-import { Detail, DetailWrapper } from "./detail";
-import { Outline } from "./outline";
-import { SearchList } from "./search-list";
+
+import { el, fn } from "../runtime/el";
+import { DetailWrapper } from "./detail";
 import "./app.less";
 import { SearchLayout } from "./search-layout";
-export const App = (data, props) => {
+import { FC } from "../runtime/type";
+export const App: FC = (data, props) => {
 	data.msg = ''
 
 	return () => {

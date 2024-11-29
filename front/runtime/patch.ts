@@ -91,7 +91,7 @@ function handleAddDelMove (patchSet: Patch[]) {
 	}
 }
 
-function loopChildrenDom(node: IEl, cb: (dom: HTMLElement|Text) => void) {
+export function loopChildrenDom(node: IEl, cb: (dom: HTMLElement|Text) => void) {
 	// 删除所有 dom
 	const firstDom = node.firstDom!();
 	const lastDom = node.lastDom!();
@@ -105,7 +105,7 @@ function loopChildrenDom(node: IEl, cb: (dom: HTMLElement|Text) => void) {
 	cb(lastDom);
 }
 
-function findParentAndSib(node: IEl) {
+export function findParentAndSib(node: IEl) {
 	let point = node.parent;
 	let sibDom = siblingDom(node);
 	let pDom: HTMLElement | undefined = undefined;

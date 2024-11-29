@@ -13,6 +13,7 @@ export enum MsgType {
 	RenameFile = 'RenameFile',
 	Request = 'Request',
 	Response = 'Response',
+	Reload = 'Reload',
 }
 
 export enum ReqType {
