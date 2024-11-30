@@ -5,7 +5,7 @@ import { FC } from "../runtime/type";
 import { Events, msg } from "../util/var";
 import { Detail, Props } from "./detail";
 import { el, fn } from "../runtime/el";
-import { info } from "../components/message";
+import { info } from "../components/toast";
 
 export type WrapperProps = {
 	
@@ -29,25 +29,36 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 		if(define && !!fileRefs?.length) {
 			return res.data;
 		} else {
-
-			info(name ? `未找到任何${name}相关的引用！` : '未找到任何引用！');
+			info(name ? `未找到任何${name}相关的引用!` : '未找到任何引用!');
 		}
 	})
 
 	Events.on('open-detail', run)
 
-	msg.on(MsgType.CursorMove, ({ pos, uri, kind }) => {
-		const isMouseClick = kind === TextEditorSelectionChangeKind.Mouse;
+	msg.on(MsgType.CursorMove, ({ pos, uri, kind }) => handleMoveOrSelect(pos, uri, kind))
+	msg.on(MsgType.SelectionChange, ({ former, uri, kind }) => handleMoveOrSelect(former, uri, kind));
 
+
+	function handleMoveOrSelect(pos, uri, kind) {
+		// 如果移动到引用列表的任意位置则继续
+
+		const isMouseClick = kind === TextEditorSelectionChangeKind.Mouse;
 		if(isMouseClick) {
 			run(pos, uri);
 		}
-	})
+	}
+
+
+	function hasRefs() {
+		const { value: {define,fileRefs } = {} } = data.refs;
+		const has = define && !!fileRefs?.length
+		return has;
+	}
 
 
 	return () => {
 		const { value: {define,fileRefs } = {} } = data.refs;
-		const showDetail = define && !!fileRefs?.length
+		const showDetail = hasRefs();
 
 		return [
 			el('div', {  }, [

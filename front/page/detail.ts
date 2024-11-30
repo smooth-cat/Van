@@ -4,6 +4,7 @@ import { FC } from '../runtime/type';
 import './detail.less';
 import { Icon } from '../icon/fc';
 import { iClose } from '../icon';
+import { DetailFile } from './detail-ref-file';
 
 export type Props = {
 	fileRefs: FileRef[], 
@@ -32,14 +33,7 @@ export const Detail: FC<any, Props> = (data, props) => {
           'div',
           { class: 'refs' },
           fileRefs.map(([uri, refs]) =>
-            el('div', { class: 'ref-file' }, [
-              el('div', { class: 'file-path' }, [text(uri.relativePath)]),
-              el(
-                'div',
-                { class: 'ref-list' },
-                refs.map(it => el('div', { class: 'ref-item' }, [text(it.lineText)]))
-              )
-            ])
+            fn(DetailFile, { uri, refs })
           )
         )
       ])

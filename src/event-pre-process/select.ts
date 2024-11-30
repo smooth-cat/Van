@@ -1,6 +1,7 @@
 import { commands, Location, Position, Range, TextEditorSelectionChangeEvent, TextEditorSelectionChangeKind } from 'vscode';
 import { Message } from '../../shared/message';
 import { MsgType } from '../../shared/var';
+import { debounce } from '../../shared/utils';
 
 const isFormer = (a: Position, b: Position) => {
   // 同行比列
@@ -24,18 +25,21 @@ export const emitSelectOrCursorChange = async (e: TextEditorSelectionChangeEvent
   // TODO: cursor 移动
   const { active, anchor } = e.selections[0] || {};
   const { document } = e.textEditor;
+	const { kind } = e;
 	
   const { uri } = document;
 	if(isCursorMove(active, anchor)) {
 		// if(e.kind !== TextEditorSelectionChangeKind.Mouse) return;
 		// 有 4 种： 0.鼠标 1.键盘 2.代码片段等 3.其他系统前进后退指令
-		msg.emit(MsgType.CursorMove, {pos: active, uri, kind: e.kind });
+		msg.emit(MsgType.CursorMove, {pos: active, uri, kind });
 		console.log('CursorMove',e, {pos: active, uri});
 		return;
 	}
-	
+  handleSelection({ active, anchor, document, msg, uri, kind });
+};
 
-  const aIsFormer = isFormer(active, anchor);
+const handleSelection = debounce(function ({active, anchor, document, msg, uri, kind}) {
+	const aIsFormer = isFormer(active, anchor);
 
   let former = aIsFormer ? active : anchor;
   const later = aIsFormer ? anchor : active;
@@ -81,13 +85,6 @@ export const emitSelectOrCursorChange = async (e: TextEditorSelectionChangeEvent
 		former,
 		later,
 		uri,
-		kind: e.kind
+		kind,
 	})
-
-  // try {
-  //   const locations: Location[] = await commands.executeCommand('vscode.executeReferenceProvider', uri, former);
-  //   console.log('当前选中标识符locations', locations);
-  // } catch (error) {
-  //   console.log('获取reference错误', error);
-  // }
-};
+})
