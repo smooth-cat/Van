@@ -1,4 +1,5 @@
 import { Expand } from '../components/expand';
+import { Tooltip } from '../components/tooltip';
 import { iArrow } from '../icon';
 import { Icon } from '../icon/fc';
 import { el, fn, text } from '../runtime/el';
@@ -28,11 +29,11 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 				el('div', { class: 'file-title' }, [
 					fn(Icon, { class: `file-expand ${data.expand ? 'expanded' : ''}`, i: iArrow, size: 15, onclick: expand }),
 					el('div', { class: 'file-name' }, [text(fileName)]),
-					el('div', { class: 'file-path' }, [text(uri.relativePath)]),
+					el('div', { class: 'file-path ellipsis', title: uri.relativePath }, [text(uri.relativePath)]),
 				]),
         fn(Expand, {
           class: 'ref-list',
-          els: refs.map(it => el('div', { class: 'ref-item' }, [text(it.lineText)])),
+          els: refs.map(it => el('div', { class: 'ref-item fade-ellipsis', title: it.lineText }, [text(it.lineText)])),
 					expand: data.expand,
         })
       ])

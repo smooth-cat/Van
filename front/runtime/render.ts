@@ -70,5 +70,5 @@ function flush() {
 	// 完成后处理所有 Patch 补丁
 	processPatchList()
 	setVar('flushStatus', FlushStatus.None);
-	console.log('渲染完成', window['root']);
+	console.log('渲染完成', window['roots']);
 }

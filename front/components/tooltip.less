@@ -1,0 +1,33 @@
+.tooltip-wrap {
+	position: relative;
+
+
+	.tooltip-inner {
+		--show: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    animation: check 0s;
+    animation-timeline: scroll(x self);
+		&::after {
+			content: attr(tip);
+			opacity: 0;
+			top: 100%;
+			left: 0;
+			position: absolute;
+			pointer-events: none;
+			transition: .3s;
+		}
+		&:hover::after {
+			opacity: var(--show);
+			pointer-events: inherit;
+		}
+	}
+}
+
+@keyframes check{
+	from,to {
+		--show: 1;
+	}
+}
+

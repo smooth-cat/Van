@@ -13,31 +13,32 @@ export type Props = {
 }
 
 export const Detail: FC<any, Props> = (data, props) => {
+  return () => {
+    const { fileRefs, define, close } = props;
+    console.log({ fileRefs, define });
 
+    const fileName = define.uri.relativePath.split('/').pop() || '';
 
-	return () => {
-		const { fileRefs,  define, close } = props;
-		console.log({ fileRefs,  define });
-
-		return [
+    return [
       el('div', { class: 'detail' }, [
-        el('h3', { class: 'title' }, [
-					text(define.name),
-					fn(Icon, { class: 'close', i: iClose, size: 20, onclick: close })
-				]),
-        el('div', { class: 'define1' }, [
-					el('div', { class: 'file-path' }, [text(define.uri.relativePath)]),
-					el('div',  { class: 'ref-item' }, [text(define.declaration)])
-				]),
-        el(
-          'div',
-          { class: 'refs' },
-          fileRefs.map(([uri, refs]) =>
-            fn(DetailFile, { uri, refs })
-          )
-        )
+        el('div', { class: 'title' }, [
+          text(define.name),
+          fn(Icon, { class: 'close', i: iClose, size: 20, onclick: close })
+        ]),
+        el('div', { class: 'define' }, [
+          el('div', { class: 'define-title' }, [text('定义'), el('span', {  }, [text(' definition')])]),
+					el('div', { class: 'file-title' }, [
+						el('div', { class: 'file-name'}, [text(fileName)]),
+						el('div', { class: 'file-path ellipsis', title: define.uri.relativePath }, [text(define.uri.relativePath)]),
+					]),
+          el('div', { class: 'ref-item fade-ellipsis', title: define.declaration }, [text(define.declaration)])
+        ]),
+        el('div', { class: 'refs' }, [
+          el('div', { class: 'reference-title' }, [text('引用'), el('span', {  }, [text(' references')])]),
+          ...fileRefs.map(([uri, refs]) => fn(DetailFile, { uri, refs }))
+        ])
       ])
     ];
-	}
-}
+  };
+};
 

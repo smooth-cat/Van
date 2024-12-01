@@ -1,20 +1,37 @@
 .detail {
 	position: fixed;
 	z-index: 10;
-	width: 100%;
-	height: 100%;
+	width: 100vw;
+	height: 100vh;
 	top: 0;
 	left: 0;
-	background-color: var(--vscode-sideBar-background);
+	// background-color: var(--vscode-sideBar-background);
+	background-color: var(--cg-bg);
+	padding: 8px;
+	overflow-x: hidden;
+	box-sizing: border-box;
 	.title {
-
+		font-size: var(--fz-lg);
+		margin: 0px 0px 11px 15px;
 	}
 	.define {
-		.file-path {
-
+		.file-title {
+			display: flex;
+			align-items: center;
+			margin: 8px 0;
+			.file-name {
+				flex: none;
+				margin-right: 8px;
+				font-size: var(--fz-sm);
+			}
+			.file-path {
+				font-size: var(--fz-xs);
+			}
+			padding-left: 15px;
 		}
 		.ref-item {
-
+			margin: 8px 0px;
+			padding-left: 15px;
 		}
 	}
 	.refs {
@@ -22,6 +39,8 @@
 			.file-title {
 				display: flex;
 				align-items: center;
+				margin-bottom: 3px;
+				margin-top: 8px;
 				.file-expand {
 					transition: .3s;
 					transform-origin: center;
@@ -33,13 +52,11 @@
 					transform: rotate(90deg);
 				}
 				.file-name {
+					flex: none;
 					margin-right: 8px;
 					font-size: var(--fz-sm);
 				}
 				.file-path {
-					white-space: nowrap;
-					overflow: hidden;
-					text-overflow: ellipsis;
 					font-size: var(--fz-xs);
 				}
 			}
@@ -59,11 +76,23 @@
 					left: 7px;
 				}
 			}
-			.ref-item {
-				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
+			.ref-item:not(:last-child) {
+				margin-bottom: 6px;
+				// text-overflow: ellipsis;
 			}
+		}
+	}
+
+	.define-title,.reference-title {
+		background-color: #16191c;
+		margin: 0 -8px;
+		padding: 4px 8px;
+		font-size: var(--fz-md);
+		border-top: 1px solid #7c7c7c4a;
+		border-bottom: 1px solid #7c7c7c4a;
+
+		& > span {
+			font-size: var(--fz-xs);
 		}
 	}
 }

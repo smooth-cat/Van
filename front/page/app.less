@@ -1,9 +1,47 @@
 :root {
-  --fz-lg: 26px;
-  --fz-md: 20px;
+	/* 
+		颜色
+		--cg-color 前景色
+		--cg-bg    背景色
+	*/
+	--cg-color: rgb(210, 210, 210);
+	--cg-bg: #0d1117;
+	/*
+		字体
+	*/
+  --fz-lg: 20px;
+  --fz-md: 16px;
   --fz-sm: 14px;
   --fz-xs: 12px;
 }
 #app {
 	font-size: var(--fz-sm);
+	width: 100vw;
+	height: 100vh;
+	overflow: auto;
+}
+
+html,body {
+	overflow: hidden;
+	background: var(--cg-bg);
+	color: var(--cg-color);
+}
+
+body * {
+	box-sizing: border-box;
+}
+
+.fade-ellipsis {
+	// background: linear-gradient(to right, var(--vscode-editor-foreground) 93%, rgba(255, 255, 255, 0.112) 96%,transparent 100%); 
+	background: linear-gradient(to right, var(--cg-color) 93%, rgba(255, 255, 255, 0.112) 96%,transparent 100%); 
+	background-clip:text;
+	-webkit-text-fill-color:transparent;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.ellipsis {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
