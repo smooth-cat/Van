@@ -32,6 +32,8 @@ export type Loc = {
 export type Reference = Loc & {
 	name: string;
 	lineText: string;
+	suffix: string;
+	prefix: string;
 }
 
 export type Define = Reference & {
@@ -64,5 +66,7 @@ export enum TextEditorSelectionChangeKind {
 	/**
 	 * Selection changed because a command ran.
 	 */
-	Command = 3
+	Command = 3,
+
+	BackOrForward = 'BackOrForward'
 }

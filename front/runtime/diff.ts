@@ -283,7 +283,7 @@ export const nodeOpr = {
 			key = key.trim();
 			value = value.trim();
 			if(key && value) {
-				dom.style[key] = value;
+				dom.style.setProperty(key, value);
 			}
 		})
 	},

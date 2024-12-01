@@ -34,6 +34,12 @@ export class BaseEvent {
     this.subMap.set(type, suber);
   };
 
+	off = (type: string|undefined, fn: Func) => {
+    const suber = this.subMap.get(type ?? ALL);
+		if(!suber) return;
+		suber.delete(fn);
+	}
+
 	once = (type: string|undefined, fn: Func) => {
 		fn['once'] = true;
 		this.on(type, fn);

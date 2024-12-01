@@ -6,6 +6,7 @@ import { Events, msg } from "../util/var";
 import { Detail, Props } from "./detail";
 import { el, fn } from "../runtime/el";
 import { info } from "../components/toast";
+import { useEvent } from "../hook/useEvent";
 
 export type WrapperProps = {
 	
@@ -33,7 +34,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 		}
 	})
 
-	Events.on('open-detail', run)
+	useEvent('open-detail', run)
 
 	msg.on(MsgType.CursorMove, ({ pos, uri, kind }) => handleMoveOrSelect(pos, uri, kind))
 	msg.on(MsgType.SelectionChange, ({ former, uri, kind }) => handleMoveOrSelect(former, uri, kind));
@@ -42,8 +43,8 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 	function handleMoveOrSelect(pos, uri, kind) {
 		// 如果移动到引用列表的任意位置则继续
 
-		const isMouseClick = kind === TextEditorSelectionChangeKind.Mouse;
-		if(isMouseClick) {
+		const shouldRefresh = [TextEditorSelectionChangeKind.Mouse, TextEditorSelectionChangeKind.BackOrForward].includes(kind);
+		if(shouldRefresh) {
 			run(pos, uri);
 		}
 	}

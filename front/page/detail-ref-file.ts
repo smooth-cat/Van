@@ -1,5 +1,6 @@
+import { Reference } from '../../shared/var';
 import { Expand } from '../components/expand';
-import { Tooltip } from '../components/tooltip';
+import { useEvent } from '../hook/useEvent';
 import { iArrow } from '../icon';
 import { Icon } from '../icon/fc';
 import { el, fn, text } from '../runtime/el';
@@ -13,6 +14,10 @@ type Data = {
 
 export const DetailFile: FC<Data, Props> = (data, props) => {
 	data.expand = true;
+	
+	useEvent('refs-expand', (exp: boolean) => {
+		data.expand = exp;
+	})
 
 
 	function expand() {
@@ -26,17 +31,42 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 
     return [
       el('div', { class: 'ref-file' }, [
-				el('div', { class: 'file-title' }, [
-					fn(Icon, { class: `file-expand ${data.expand ? 'expanded' : ''}`, i: iArrow, size: 15, onclick: expand }),
-					el('div', { class: 'file-name' }, [text(fileName)]),
-					el('div', { class: 'file-path ellipsis', title: uri.relativePath }, [text(uri.relativePath)]),
-				]),
+        el('div', { class: 'file-title' }, [
+          fn(Icon, { class: `file-expand ${data.expand ? 'expanded' : ''}`, i: iArrow, size: 15, onclick: expand }),
+          el('div', { class: 'file-name' }, [text(fileName)]),
+          el('div', { class: 'file-path ellipsis', title: uri.relativePath }, [text(uri.relativePath)])
+        ]),
         fn(Expand, {
           class: 'ref-list',
-          els: refs.map(it => el('div', { class: 'ref-item fade-ellipsis', title: it.lineText }, [text(it.lineText)])),
-					expand: data.expand,
+					// TODO: 优化 els 变化导致的 Expand 组件重新渲染
+          els: [
+            el(
+              'div',
+              { class: 'ref-grid' },
+              refs.reduce((lis, it: Reference) => {
+                lis.push(
+                  ...[
+                    el('div', { class: 'ref-line' }, [text(it.range[0].line)]),
+                    el('div', { class: 'ref-lineText fade-ellipsis', title: it.lineText }, [
+											el('span', { class: 'ref-name' }, [
+												text(it.name)
+											]),
+											text(it.suffix)
+										])
+                  ]
+                );
+                return lis;
+              }, [])
+            )
+          ],
+          expand: data.expand
         })
-      ])
+      ]),
+      el('div', { class: 'ref-file-divide' })
     ];
   };
 }
+
+
+
+

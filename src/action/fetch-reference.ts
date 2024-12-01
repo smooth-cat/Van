@@ -102,7 +102,13 @@ function extStart(range: Range, len = 40) {
 }
 
 function getText(document: TextDocument, range: Range) {
-  const lineText = document.getText(extStart(range, 2000));
+	const prefixRange = new Range(new Position(range.start.line, 0), range.start);
+	const suffixRange = new Range(new Position(range.end.line, range.end.character), new Position(range.end.line, Infinity));
+	const lineTextRange = extStart(range, 2000);
+
+	const prefix = document.getText(prefixRange);
+	const suffix = document.getText(suffixRange);
+  const lineText = document.getText(lineTextRange);
   const sameLine = range.start.line === range.end.line;
   let name: string;
 
@@ -114,7 +120,9 @@ function getText(document: TextDocument, range: Range) {
 
   return {
     name,
-    lineText
+    lineText,
+		prefix,
+		suffix,
   };
 }
 

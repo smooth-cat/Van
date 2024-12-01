@@ -1,6 +1,6 @@
-import { commands, Location, Position, Range, TextEditorSelectionChangeEvent, TextEditorSelectionChangeKind } from 'vscode';
+import { commands, Location, Position, Range, TextEditorSelectionChangeEvent, window } from 'vscode';
 import { Message } from '../../shared/message';
-import { MsgType } from '../../shared/var';
+import { MsgType, TextEditorSelectionChangeKind } from '../../shared/var';
 import { debounce } from '../../shared/utils';
 
 const isFormer = (a: Position, b: Position) => {
@@ -88,3 +88,12 @@ const handleSelection = debounce(function ({active, anchor, document, msg, uri, 
 		kind,
 	})
 })
+
+export const handleCommandMove = (msg) => {
+	const cursor = window.activeTextEditor?.selection.active;
+	const uri = window.activeTextEditor?.document.uri;
+	console.log('handleCommandMove', cursor, uri);
+	
+	if(cursor == null || uri == null) return;
+	msg.emit(MsgType.CursorMove, {pos: cursor, uri, kind: TextEditorSelectionChangeKind.BackOrForward });
+}

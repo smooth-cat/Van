@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as action from './action/index';
 import { Message } from '../shared/message/index';
 import { MsgType, ReqType } from '../shared/var';
-import { emitSelectOrCursorChange } from './event-pre-process/select';
+import { emitSelectOrCursorChange, handleCommandMove } from './event-pre-process/select';
 import { debounce } from '../shared/utils';
 
 const { window, workspace } = vscode;
@@ -35,18 +35,22 @@ export function activate(context: vscode.ExtensionContext) {
 		// 重命名项目文件
 		workspace.onDidRenameFiles((e) => {
 			provider.msg.emit(MsgType.RenameFile, { uris: e.files });
-		})
+		}),
 		/**
 		 * 注册 cmd shift p 命令，与 package.contributes.commands 联动
 		 * provider 通过 postMessage 和 webview
 		 */
-		// vscode.commands.registerCommand('', () => {
-		// })
+		vscode.commands.registerCommand('code-guide.forward', async() => {
+			const res = await vscode.commands.executeCommand('workbench.action.navigateForward')
+			handleCommandMove(provider.msg);
+		}),
+		vscode.commands.registerCommand('code-guide.backward', async() => {
+			const res = await vscode.commands.executeCommand('workbench.action.navigateBack')
+			handleCommandMove(provider.msg);
+		})
 	);
 
 	function onResolved(self: GuideViewProvider) {
-		eval(`console.log('成功eval')`)
-
 		self.msg.onReq(ReqType.Command, async(res, data: any[]) => {
 			const [name, ...args] = data;
 			try {
@@ -165,7 +169,7 @@ class GuideViewProvider implements vscode.WebviewViewProvider {
 				<title>Cat Colors</title>
 			</head>
 			<body>
-				<div id='app' ></div>
+				<div id='app' data-vscode-context='${JSON.stringify({ preventDefaultContextMenuItems: true })}' ></div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;

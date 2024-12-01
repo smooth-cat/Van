@@ -7,19 +7,36 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+		display: flex;
+		align-items: center;
+		justify-content: center;
     animation: check 0s;
     animation-timeline: scroll(x self);
 		&::after {
+			display: block;
+			box-sizing: border-box;
 			content: attr(tip);
 			opacity: 0;
-			top: 100%;
-			left: 0;
+			top: var(--tip-top);
+			left: var(--tip-left);
+			bottom: var(--tip-bottom);
+			right: var(--tip-right);
+			transform: var(--tip-transform);
 			position: absolute;
 			pointer-events: none;
 			transition: .3s;
+			font-size: var(--fz-xs);
+			border: 1px solid var(--cg-border);
+			background-color: var(--cg-bg-fade);
+			border-radius: 2px;
+			padding: 1px 3px;
 		}
-		&:hover::after {
+		&.needOverflow:hover::after {
 			opacity: var(--show);
+			pointer-events: inherit;
+		}
+		&.noOverflow:hover::after {
+			opacity: 1;
 			pointer-events: inherit;
 		}
 	}

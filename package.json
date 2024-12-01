@@ -42,9 +42,29 @@
 				}
 			]
 		},
-		"commands": [],
+		"commands": [
+			{
+				"command": "code-guide.forward",
+				"title": "🤡前进👉️",
+				"category": "code-guide"
+			},
+			{
+				"command": "code-guide.backward",
+				"title": "👈️后退🤡",
+				"category": "code-guide"
+			}
+		],
 		"menus": {
-			"view/title": []
+			"webview/context": [
+				{
+					"command": "code-guide.forward",
+					"when": "webviewId == 'code-guide'"
+				},
+				{
+					"command": "code-guide.backward",
+					"when": "webviewId == 'code-guide'"
+				}
+			]
 		}
 	},
 	"scripts": {
