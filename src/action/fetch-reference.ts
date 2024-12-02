@@ -4,7 +4,6 @@ import { sortBy } from '../../shared/utils';
 
 export async function fetchReference(pos: Position, uri: Uri) {
   pos = fromPos(pos);
-
   uri = Uri.from(uri);
 
   const docMap = new Map<Uri, Thenable<TextDocument>>();
@@ -53,7 +52,9 @@ export async function fetchReference(pos: Position, uri: Uri) {
 
     return {
       fileRefs,
-      define
+      define,
+			activePos: pos,
+			activeUri: uri,
     };
   } catch (error) {
     console.log('获取reference错误', error);
@@ -81,7 +82,7 @@ const handleDefine = async (dif: (Location | LocationLink)[]) => {
   let rawRange = first instanceof Location ? first.range : first.targetRange;
 
   if (rawRange.start.line === rawRange.end.line) {
-    rawRange = extStart(rawRange, 2000);
+    rawRange = extStart(rawRange, 60);
   }
 
   // 声明字符串
@@ -95,7 +96,7 @@ const handleDefine = async (dif: (Location | LocationLink)[]) => {
   };
 };
 
-function extStart(range: Range, len = 40) {
+function extStart(range: Range, len = 60) {
   const end = new Position(range.start.line, range.start.character + len);
   const newRange = new Range(range.start, end);
   return newRange;
@@ -103,8 +104,8 @@ function extStart(range: Range, len = 40) {
 
 function getText(document: TextDocument, range: Range) {
 	const prefixRange = new Range(new Position(range.start.line, 0), range.start);
-	const suffixRange = new Range(new Position(range.end.line, range.end.character), new Position(range.end.line, Infinity));
-	const lineTextRange = extStart(range, 2000);
+	const suffixRange = new Range(new Position(range.end.line, range.end.character), new Position(range.end.line, 60));
+	const lineTextRange = extStart(range, 60);
 
 	const prefix = document.getText(prefixRange);
 	const suffix = document.getText(suffixRange);

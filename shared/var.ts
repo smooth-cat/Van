@@ -46,6 +46,8 @@ export type FileRef = [Uri, Reference[]];
 export type FetchRefRes = {
 	define: Define,
 	fileRefs: FileRef[],
+	activePos: Position,
+	activeUri: RawUri
 }
 
 export type DocNode = Pick<DocumentSymbol, 'name' | 'kind'> & {
@@ -54,7 +56,7 @@ export type DocNode = Pick<DocumentSymbol, 'name' | 'kind'> & {
 	range: IRange,
 }
 
-export enum TextEditorSelectionChangeKind {
+export enum CursorMoveKind {
 	/**
 	 * Selection changed due to typing in the editor.
 	 */
@@ -68,5 +70,6 @@ export enum TextEditorSelectionChangeKind {
 	 */
 	Command = 3,
 
-	BackOrForward = 'BackOrForward'
+	BackOrForward = 'BackOrForward',
+	GotoLocation = 'GotoLocation'
 }

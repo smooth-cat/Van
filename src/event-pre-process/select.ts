@@ -1,6 +1,6 @@
 import { commands, Location, Position, Range, TextEditorSelectionChangeEvent, window } from 'vscode';
 import { Message } from '../../shared/message';
-import { MsgType, TextEditorSelectionChangeKind } from '../../shared/var';
+import { MsgType, CursorMoveKind } from '../../shared/var';
 import { debounce } from '../../shared/utils';
 
 const isFormer = (a: Position, b: Position) => {
@@ -21,15 +21,14 @@ const isCursorMove = (a: Position, b: Position) => {
 
 /** cursor、选择变化, 输入也会触发 */
 export const emitSelectOrCursorChange = async (e: TextEditorSelectionChangeEvent, msg: Message) => {
-  // console.log('选择变化');
-  // TODO: cursor 移动
   const { active, anchor } = e.selections[0] || {};
   const { document } = e.textEditor;
 	const { kind } = e;
-	
+
   const { uri } = document;
 	if(isCursorMove(active, anchor)) {
-		// if(e.kind !== TextEditorSelectionChangeKind.Mouse) return;
+		// TODO: 对其他前进后退指令处理, 目前本插件进行的移动会在执行完成后主动触发 CursorMove
+		if(kind == null) return;
 		// 有 4 种： 0.鼠标 1.键盘 2.代码片段等 3.其他系统前进后退指令
 		msg.emit(MsgType.CursorMove, {pos: active, uri, kind });
 		console.log('CursorMove',e, {pos: active, uri});
@@ -95,5 +94,9 @@ export const handleCommandMove = (msg) => {
 	console.log('handleCommandMove', cursor, uri);
 	
 	if(cursor == null || uri == null) return;
-	msg.emit(MsgType.CursorMove, {pos: cursor, uri, kind: TextEditorSelectionChangeKind.BackOrForward });
+	msg.emit(MsgType.CursorMove, {pos: cursor, uri, kind: CursorMoveKind.BackOrForward });
+}
+
+export const handleGotoLocation = (uri, pos, msg) => {
+	msg.emit(MsgType.CursorMove, { pos, uri, kind: CursorMoveKind.GotoLocation });
 }

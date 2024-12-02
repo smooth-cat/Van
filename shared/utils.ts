@@ -1,3 +1,5 @@
+import { Position } from "vscode";
+
 export const pick = <T extends Record<any, any>>(t: T, keys: (keyof T)[]) => {
 	let obj: any = {};
 	for (const key of keys) {
@@ -98,3 +100,15 @@ type ISortBy = {
 	
 	return list;
  }
+
+
+ export const isFormer = (a: Position, b: Position, equal = false) => {
+
+  // 同行比列
+  if (a.line === b.line) {
+    return equal ? a.character <= b.character : a.character < b.character;
+  }
+
+  // 不同行比行
+  return a.line < b.line;
+};

@@ -1,9 +1,10 @@
 import { SymbolKind, Uri } from 'vscode';
-import { DocNode } from '../../shared/var';
+import { DocNode, MsgType, ReqType } from '../../shared/var';
 import { el, fn, text } from '../runtime/el';
 import { FC } from '../runtime/type';
 import './node.less';
-import { Events, SymbolMap } from '../util/var';
+import { Events, msg, SymbolMap } from '../util/var';
+import { toRaw } from '@vue/reactivity';
 
 export type Props = {
 	value: DocNode,
@@ -18,8 +19,8 @@ export const Node: FC<Data, Props> = (data, props) => {
 
 
 	const clickDetailBtn = () => {
-		const { value: { range, name }, uri } = props;
-		Events.emit('open-detail', range[0], uri, name);
+		const { value: { range }, uri } = props;
+		msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(range[0])])
 	}
 
 	return () => {
