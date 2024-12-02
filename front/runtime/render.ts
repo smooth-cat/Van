@@ -9,10 +9,12 @@ export const ROOTS = new Set<IEl>();
 window['roots'] = ROOTS;
 
 export const render = (app: IEl, dom: HTMLElement) => {
+	console.time('首屏渲染');
 	const ROOT = el('root', {}, [app]);
 	ROOT.dom = dom;
 	ROOTS.add(ROOT);
 	diff(null, app);
+	console.timeEnd('首屏渲染');
 	console.log('渲染完成', window['roots']);
 	return ROOT;
 }
@@ -34,16 +36,21 @@ export const dispatchFlush = () => {
 }
 
 function flush() {
+	console.time('更新渲染');
+	
+	
 	setVar('flushStatus', FlushStatus.Flushing);
 	const roots = getVar('diffRoots');
 	let prev: IEl|undefined;
+	const renderFCs: any[] = [];
 	// 处理所有更新节点
 	while ((prev = roots.poll()) != null) {
-		const handled = !prev.FC?.renderEffect.dirty;
-		const willDestroy = prev.willDestroy;
+		const destroyed = !prev.FC;
+		const handled = prev.FC && !prev.FC.renderEffect.dirty;
 		// 已经被父组件更新过，父组件diff时标记为删除，则不需要做重复 diff
-		if(handled || willDestroy) continue;
+		if(destroyed || handled) continue;
 		const curr = nodeOpr.cloneFCNode(prev);
+		renderFCs.push(curr.$type['name']);
 		const parent = prev.parent;
 		const childI = prev.index;
 		diff(prev, curr);
@@ -66,9 +73,10 @@ function flush() {
 		// 	before && (before.sibling = curr);
 		// 	after && (curr.sibling = after);
 		// }
+		// 每完成一颗子树就清空其 Patch
+		processPatchList()
 	}
-	// 完成后处理所有 Patch 补丁
-	processPatchList()
 	setVar('flushStatus', FlushStatus.None);
-	console.log('渲染完成', window['roots']);
+	console.timeEnd('更新渲染');
+	console.log('更新渲染节点', renderFCs);
 }

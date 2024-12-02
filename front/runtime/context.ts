@@ -12,7 +12,7 @@ export const inject = (name: string, obj: Record<any, any>) => {
 	currInit!.ctx[name] = obj;
 }
 
-export const use = (name: string) => {
+export const use = <T>(name: string): T => {
 	const currInit = getVar('curInitFC');
 	let point: Component | null | undefined = currInit;
 
@@ -24,4 +24,5 @@ export const use = (name: string) => {
 		}
 		point = point?.el?.owner;
 	} while (point != null);
+	return undefined as any
 }

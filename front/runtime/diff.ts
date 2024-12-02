@@ -490,7 +490,7 @@ function patchPureAdd(patcher, currList, start, end) {
 function patchPureDel(patcher, prevList, start, end) {
 	for (let i = end; i >= start; i--) {
 		const it = prevList[i];
-		it.willDestroy = true;
+		// it.willDestroy = true;
 		patcher.patch(PatchType.Del, it);
 	}
 }
@@ -499,7 +499,7 @@ function patchMixDel(patcher, prevKeyMap, prevList) {
 	prevKeyMap.forEach(prevI => {
 		const it = prevList[prevI];
 		// 假设删除的同时还修改了内部的 data，就可以通过这个标志不触发渲染
-		it.willDestroy = true;
+		// it.willDestroy = true;
 		patcher.patch(PatchType.Del, it);
 	});
 }
