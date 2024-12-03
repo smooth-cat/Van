@@ -36,19 +36,19 @@ export async function fetchReference(pos: Position, uri: Uri) {
 
     const define = res[res.length - 1];
 
-    const fileRefs = sortEntry.map(([uri, locs], i) => {
+    const fileRefs = sortEntry.map(([uriItem, locs], i) => {
+			const uriActive = uriItem.path === uri.path;
       const doc = res[i];
       const handledLocs = locs.map(loc => ({
         ...loc,
+				active: isActiveRef(uriActive, pos, loc),
         ...getText(doc, loc.range)
       }));
 
-      uri = relative(uri);
-
-      return [uri, handledLocs] as const;
+      uriItem = relative(uriItem);
+			uriItem['active'] = uriActive;
+      return [uriItem, handledLocs] as const;
     });
-
-    // TODO: 按文件分类 和 define
 
     return {
       fileRefs,
@@ -59,6 +59,11 @@ export async function fetchReference(pos: Position, uri: Uri) {
   } catch (error) {
     console.log('获取reference错误', error);
   }
+}
+
+function isActiveRef(uriSame:boolean, pos: Position, loc: Location) {
+	if(!uriSame) return false;
+	return loc.range.contains(pos);
 }
 
 const handleDefine = async (dif: (Location | LocationLink)[]) => {

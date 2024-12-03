@@ -30,23 +30,6 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 		data.expand  = !data.expand
 	}
 
-	function isActiveRef(ref: Reference) {
-		const { activePos, activeUri } = detailCtx.value;
-		const uri = ref.uri;
-		if(uri.path !== activeUri.path) return false;
-
-		const start = ref.range[0];
-		const end = ref.range[1];
-		const inRange = isFormer(start, activePos, true) && isFormer(activePos, end);
-
-		return inRange;
-	}
-
-	function isActiveFile() {
-		const { activeUri } = detailCtx.value;
-		return props.uri.path === activeUri.path
-	}
-
 	return () => {
     const { uri, refs } = props;
 
@@ -56,7 +39,8 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 
     return [
       el('div', { class: 'ref-file' }, [
-        el('div', { class: `file-title ${isActiveFile() ? 'active-file' : ''} ` }, [
+        el('div', { class: `file-title ${uri.active ? 'active-file' : ''} ` }, [
+					// TODO: 使用 icon-font
           fn(Icon, { class: `file-expand ${data.expand ? 'expanded' : ''}`, i: iArrow, size: 15, onclick: expand }),
           el('div', { class: 'file-name' }, [text(fileName)]),
           el('div', { class: 'file-path ellipsis', title: uri.relativePath }, [text(uri.relativePath)])
@@ -71,8 +55,8 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
               refs.reduce((lis, it: Reference) => {
                 lis.push(
                   ...[
-                    el('div', { class: `ref-line ${isActiveRef(it) ? 'active-ref': ''}` }, [text(it.range[0].line+1)]),
-										el('div', { class: `ref-lineTextHighlight ${isActiveRef(it) ? 'active-ref': ''}` }, [
+                    el('div', { class: `ref-line ${it.active ? 'active-ref': ''}` }, [text(it.range[0].line+1)]),
+										el('div', { class: `ref-lineTextHighlight ${it.active ? 'active-ref': ''}` }, [
 											el('div', { class: 'ref-lineText fade-ellipsis', title: it.lineText }, [
 												el('span', { class: 'ref-name' }, [
 													text(it.name)

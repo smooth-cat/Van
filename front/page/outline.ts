@@ -20,11 +20,13 @@ export const Outline: FC<Data, Props> = (data, props) => {
       ['fetchSymbol', uri]
     );
     if (Array.isArray(res.data)) {
-			const first = res.data[0];
-			data.uri = first.location.uri;
       return res.data;
     }
-  });
+  }, () => {
+		if(data.tree.value?.[0]) {
+			data.uri = data.tree.value[0].location.uri;
+		}
+	});
 
 	run();
 

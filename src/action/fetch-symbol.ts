@@ -10,7 +10,6 @@ export async function fetchSymbol(uri?: Uri) {
 
 	uri = Uri.from(uri);
 	
-	// TODO: 参数修改为 uri 通过 Uri.from 重新构建 
 	try {
 		const docSymbols = (await commands.executeCommand<DocumentSymbol[]>(
 			'vscode.executeDocumentSymbolProvider',

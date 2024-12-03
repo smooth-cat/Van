@@ -19,20 +19,17 @@ type WrapperData = {
 
 
 export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
-	data.key = performance.now();
-
 
 	const [run, reset] = useAsync('refs', async(pos, uri, kind: CursorMoveKind) => {
 		// 有详情时，移动位置在包含在详情内则不需重新加载，只改变 激活位置即可
 
 		const res = await msg.request<FetchRefRes>(ReqType.Command, ['fetchReference', toRaw(pos), toRaw(uri)]);
-		data.key = performance.now();
 		console.log('收到引用详情',res);
 		
 		const { define, fileRefs } = res.data || {};
 
 		if(define && !!fileRefs?.length) {
-			return res.data;
+			return { ...res.data, key: performance.now() };
 		} else {
 			info('未找到任何引用!');
 			return data.refs.value;
@@ -64,12 +61,12 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 	inject('detail-ctx', data.refs);
 
 	return () => {
-		const { value: {define,fileRefs,activePos, activeUri } = {} } = data.refs;
+		const { value: {define,fileRefs, key } = {} } = data.refs;
 		const showDetail = hasRefs();
 
 		return [
 			el('div', {  }, [
-				showDetail && fn(Detail, { key: data.key, fileRefs, define, close: reset })
+				showDetail && fn(Detail, { key, fileRefs, define, close: reset })
 			])
 		]
 	}

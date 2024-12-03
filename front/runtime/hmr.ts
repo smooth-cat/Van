@@ -43,7 +43,6 @@ export function useHmr() {
 			})
 			prev.clear!({ deep: true });
 			
-			// TODO: 通过事件渲染的组件内容，在热更新后会消失
 			// hmr Node 只有父节点是复用节点是，才会让子节点挂载 newDoms
 			parent!.alternate = true as any;
 			// 生成新的 dom

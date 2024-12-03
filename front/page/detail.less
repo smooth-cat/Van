@@ -55,7 +55,7 @@
 			.file-title {
 				display: flex;
 				align-items: flex-end;
-				padding: 8px 8px 10px;
+				padding: 8px 8px 8px;
 				.file-expand {
 					transition: .3s;
 					transform: translateX(-2px);
@@ -97,16 +97,20 @@
 			.ref-list {
 				// padding-left: 16px;
 				position: relative;
+				// top: -8px;
 				.expand-inner {
 					overflow: hidden;
 					.ref-grid {
 						display: grid;
 						grid-template-columns: auto 1fr;
+						&:not(:has(.active-ref:last-child)) {
+							margin-bottom: 8px;
+						}
 						.ref-line {
 							font-size: var(--fz-xs);
 							align-self: stretch;
 							display: flex;
-							align-items: flex-end;
+							align-items: center;
 							padding: 6px 0 6px 8px;
 							position: relative;
 							&.active-ref::after {
@@ -122,9 +126,8 @@
 							}
 						}
 						.ref-lineTextHighlight {
-							padding: 6px 8px 6px 6px;
+							padding: 6px 8px 6px 8px;
 							overflow: hidden;
-							align-self: end;
 							.ref-lineText {
 								.ref-name {
 									background-color: var(--cg-color-highlight);
@@ -135,7 +138,6 @@
 						.active-ref {
 							background-color: #2a9c8e78;
 						}
-						margin-bottom: 4px;
 					}
 				}
 				// &::after {

@@ -2,6 +2,7 @@ import { DocumentSymbol, Location, Position, Range, Uri as RawUri } from "vscode
 
 type Uri = RawUri & {
 	relativePath: string;
+	active: boolean;
 }
 
 export enum MsgType {
@@ -34,6 +35,7 @@ export type Reference = Loc & {
 	lineText: string;
 	suffix: string;
 	prefix: string;
+	active: boolean;
 }
 
 export type Define = Reference & {
@@ -47,7 +49,8 @@ export type FetchRefRes = {
 	define: Define,
 	fileRefs: FileRef[],
 	activePos: Position,
-	activeUri: RawUri
+	activeUri: RawUri,
+	key: number,
 }
 
 export type DocNode = Pick<DocumentSymbol, 'name' | 'kind'> & {

@@ -30,7 +30,6 @@ export const unmount = (ROOT: IEl) => {
 
 const p = Promise.resolve();
 // TODO: propsChanged 测试
-// TODO: 复测 arr diff
 export const dispatchFlush = () => {
 	p.then(flush)
 }

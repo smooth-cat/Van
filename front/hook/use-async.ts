@@ -1,4 +1,5 @@
 import { getData } from "../runtime/global";
+import { Func } from "../runtime/type";
 
 export type AsyncState<T> = {
 	value: T,
@@ -6,7 +7,7 @@ export type AsyncState<T> = {
 	loading: boolean,
 }
 
-export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: string, fn: T) {
+export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: string, fn: T, updated?: Func) {
 	const data = getData();
 	let state: any = {
 		value: undefined,
@@ -28,11 +29,13 @@ export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: strin
 				if(count !== memoCount) return;
         state.value = value;
         state.loading = false;
+				updated?.();
       },
       error => {
 				if(count !== memoCount) return;
         state.error = error;
         state.loading = false;
+				updated?.();
       }
     );
   };
