@@ -1,5 +1,5 @@
 import { Position, Uri } from 'vscode';
-import { FetchRefRes, Reference } from '../../shared/var';
+import { FetchRefRes, Reference, ReqType } from '../../shared/var';
 import { Expand } from '../components/expand';
 import { useEvent } from '../hook/useEvent';
 import { iArrow } from '../icon';
@@ -7,8 +7,9 @@ import { Icon } from '../icon/fc';
 import { el, fn, text } from '../runtime/el';
 import { FC } from '../runtime/type';
 import { use } from '../runtime/context';
-import { isFormer } from '../../shared/utils';
 import { AsyncState } from '../hook/use-async';
+import { msg } from '../util/var';
+import { toRaw } from '@vue/reactivity';
 export type Props = {
 
 }
@@ -17,7 +18,6 @@ type Data = {
 }
 
 export const DetailFile: FC<Data, Props> = (data, props) => {
-	const detailCtx = use<AsyncState<FetchRefRes>>('detail-ctx');
 
 	data.expand = true;
 	
@@ -28,6 +28,11 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 
 	function expand() {
 		data.expand  = !data.expand
+	}
+
+	function gotoRef(pos: Position) {
+		const { uri } = props;
+		msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(pos)])
 	}
 
 	return () => {
@@ -55,15 +60,24 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
               refs.reduce((lis, it: Reference) => {
                 lis.push(
                   ...[
-                    el('div', { class: `ref-line ${it.active ? 'active-ref': ''}` }, [text(it.range[0].line+1)]),
-										el('div', { class: `ref-lineTextHighlight ${it.active ? 'active-ref': ''}` }, [
-											el('div', { class: 'ref-lineText fade-ellipsis', title: it.lineText }, [
-												el('span', { class: 'ref-name' }, [
-													text(it.name)
-												]),
-												text(it.suffix)
-											])
-										])
+                    el(
+                      'div',
+                      { class: `ref-line ${it.active ? 'active-ref' : ''}`, onclick: () => gotoRef(it.range[0]) },
+                      [text(it.range[0].line + 1)]
+                    ),
+                    el(
+                      'div',
+                      {
+                        class: `ref-lineTextHighlight ${it.active ? 'active-ref' : ''}`,
+                        onclick: () => gotoRef(it.range[0])
+                      },
+                      [
+                        el('div', { class: 'ref-lineText fade-ellipsis', title: it.lineText }, [
+                          el('span', { class: 'ref-name' }, [text(it.name)]),
+                          text(it.suffix)
+                        ])
+                      ]
+                    )
                   ]
                 );
                 return lis;

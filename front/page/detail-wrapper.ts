@@ -1,5 +1,5 @@
 import { toRaw, toReactive } from "@vue/reactivity";
-import { FetchRefRes, MsgType, ReqType, CursorMoveKind } from "../../shared/var";
+import { FetchRefRes, MsgType, ReqType, CursorMoveKind, Uri, Reference, FileRef } from "../../shared/var";
 import { AsyncState, useAsync } from "../hook/use-async";
 import { FC } from "../runtime/type";
 import { Events, msg } from "../util/var";
@@ -8,6 +8,8 @@ import { el, fn } from "../runtime/el";
 import { info } from "../components/toast";
 import { useEvent } from "../hook/useEvent";
 import { inject } from "../runtime/context";
+import { Position } from "vscode";
+import { equalPos, isFormer, posInReference } from "../../shared/utils";
 
 export type WrapperProps = {
 	
@@ -15,13 +17,63 @@ export type WrapperProps = {
 type WrapperData = {
 	refs: AsyncState<FetchRefRes>;
 	detailStack: any[];
+	active: {
+		uri?: Uri,
+		reference?: Reference,
+	}
 }
 
 
 export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
+	data.active = {
+		uri: undefined,
+		reference: undefined,
+	}
 
-	const [run, reset] = useAsync('refs', async(pos, uri, kind: CursorMoveKind) => {
+	function findActiveByProp(fileRefs: FileRef[]) {
+		for (let i = 0; i < fileRefs.length; i++) {
+			const [uri, refs] = fileRefs[i];
+			if(uri.active) {
+				for (let j = 0; j < refs.length; j++) {
+					const { active } = refs[j];
+					if(active) {
+						return [i,j] as const;
+					}
+				}
+			}
+		}
+		
+	}
+	function findActiveByPos(uri1, pos, rData: WrapperData) {
+		const fileRefs = rData.refs.value.fileRefs;
+			for (let i = 0; i < fileRefs.length; i++) {
+				const [uri2, refs] = fileRefs[i];
+				const uriEq = uri1.path === uri2.path;
+				if(!uriEq) continue;
+				for (let j = 0; j < refs.length; j++) {
+					const { range: [start, end] } = refs[j];
+					if(isFormer(start, pos, true) && isFormer(pos, end)) {
+						return [i,j] as const;
+					}
+				}				
+			}
+	}
+
+	const [run, reset] = useAsync('refs', async function(uri, pos, kind: CursorMoveKind) {
+		const rData = toRaw(data);
 		// 有详情时，移动位置在包含在详情内则不需重新加载，只改变 激活位置即可
+		if(hasRefs()) {
+			// 与激活位置相同则说明不需要更新
+			if(posInReference(uri, pos, rData.active.uri, rData.active.reference?.range)) {
+				return this.value;
+			}
+
+			// 在当前引用内，只需更新激活位置，不需要重新获取
+			this.found = findActiveByPos(uri, pos, rData);
+			if(this.found) {
+				return this.value;
+			}
+		}
 
 		const res = await msg.request<FetchRefRes>(ReqType.Command, ['fetchReference', toRaw(pos), toRaw(uri)]);
 		console.log('收到引用详情',res);
@@ -29,24 +81,41 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 		const { define, fileRefs } = res.data || {};
 
 		if(define && !!fileRefs?.length) {
+			this.found = findActiveByProp(fileRefs);
 			return { ...res.data, key: performance.now() };
 		} else {
 			info('未找到任何引用!');
-			return data.refs.value;
+			return this.value;
 		}
+	}, function() {
+		if(!this.found) return;
+		if(data.active.uri && data.active.reference) {
+			// 把原来的激活取消
+			data.active.uri.active = false;
+			data.active.reference.active = false;
+		}
+		
+		const [i,j] = this.found;
+		const value: FetchRefRes = this.value;
+		const newUri = value.fileRefs[i][0];
+		const newReference = value.fileRefs[i][1][j];
+		newUri.active = true;
+		newReference.active = true;
+		data.active.uri = newUri;
+		data.active.reference = newReference;
 	})
 
-	msg.on(MsgType.CursorMove, ({ pos, uri, kind }) => handleMoveOrSelect(pos, uri, kind))
-	msg.on(MsgType.SelectionChange, ({ former, uri, kind }) => handleMoveOrSelect(former, uri, kind));
+	msg.on(MsgType.CursorMove, ({ uri, pos,  kind }) => handleMoveOrSelect(uri, pos, kind))
+	msg.on(MsgType.SelectionChange, ({ uri, former,  kind }) => handleMoveOrSelect(uri, former, kind));
 
 
-	function handleMoveOrSelect(pos, uri, kind) {
+	function handleMoveOrSelect(uri, pos , kind) {
 		// 如果移动到引用列表的任意位置则继续
 		const shouldRefresh = [CursorMoveKind.Mouse, CursorMoveKind.BackOrForward, CursorMoveKind.GotoLocation].includes(
       kind
     );
 		if(shouldRefresh) {
-			run(pos, uri, kind);
+			run(uri, pos, kind);
 		}
 	}
 
@@ -56,9 +125,6 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 		const has = define && !!fileRefs?.length
 		return has;
 	}
-
-	// 将 activePos,activeUri 注入给子组件上下文
-	inject('detail-ctx', data.refs);
 
 	return () => {
 		const { value: {define,fileRefs, key } = {} } = data.refs;

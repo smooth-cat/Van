@@ -23,19 +23,22 @@ export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: strin
 		state.loading = true;
 		count++;
 		const memoCount = count;
-    return fn(...args).then(
+		const ctx = { 
+			get value () { return state.value  } 
+		} as any;
+    return fn.apply(ctx, args).then(
 			value => {
 				// 如果 count 不同说明这个异步结果失效了
 				if(count !== memoCount) return;
         state.value = value;
         state.loading = false;
-				updated?.();
+				updated?.call(ctx);
       },
       error => {
 				if(count !== memoCount) return;
         state.error = error;
         state.loading = false;
-				updated?.();
+				updated?.call(ctx);
       }
     );
   };

@@ -1,17 +1,7 @@
 import { commands, Location, Position, Range, TextEditorSelectionChangeEvent, window } from 'vscode';
 import { Message } from '../../shared/message';
 import { MsgType, CursorMoveKind } from '../../shared/var';
-import { debounce } from '../../shared/utils';
-
-const isFormer = (a: Position, b: Position) => {
-  // 同行比列
-  if (a.line === b.line) {
-    return a.character < b.character;
-  }
-
-  // 不同行比行
-  return a.line < b.line;
-};
+import { debounce, isFormer } from '../../shared/utils';
 
 const isCursorMove = (a: Position, b: Position) => {
 	return a.line === b.line && a.character === b.character;
@@ -98,5 +88,5 @@ export const handleCommandMove = (msg) => {
 }
 
 export const handleGotoLocation = (uri, pos, msg) => {
-	msg.emit(MsgType.CursorMove, { pos, uri, kind: CursorMoveKind.GotoLocation });
+	msg.emit(MsgType.CursorMove, { uri, pos,  kind: CursorMoveKind.GotoLocation });
 }

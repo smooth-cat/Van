@@ -1,4 +1,5 @@
 import { Position } from "vscode";
+import { IRange, Uri } from "./var";
 
 export const pick = <T extends Record<any, any>>(t: T, keys: (keyof T)[]) => {
 	let obj: any = {};
@@ -112,3 +113,20 @@ type ISortBy = {
   // 不同行比行
   return a.line < b.line;
 };
+
+/** 通用 */
+export const equalPos = (uri1: Uri|undefined, pos1: Position|undefined, uri2: Uri|undefined, pos2: Position|undefined) => {
+	if(!uri1 || !uri2 || !pos1 || !pos2) return false;
+	const uriEq = uri1.path === uri2.path;
+	const posEq = pos1.line === pos2.line && pos1.character === pos2.character;
+	return uriEq && posEq;
+}
+
+/** @deprecated 仅 webview */
+export const posInReference = (uri1: Uri|undefined, pos1: Position|undefined, uri2: Uri|undefined, range: IRange|undefined) => {
+	if(!uri1 || !uri2 || !pos1 || !range) return false;
+	const uriEq = uri1.path === uri2.path;
+	const [start, end] = range;
+	const inRange = isFormer(start, pos1, true) && isFormer(pos1, end);
+	return uriEq && inRange;
+}

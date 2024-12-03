@@ -1,6 +1,6 @@
 import { DocumentSymbol, Location, Position, Range, Uri as RawUri } from "vscode";
 
-type Uri = RawUri & {
+export type Uri = RawUri & {
 	relativePath: string;
 	active: boolean;
 }
@@ -48,8 +48,6 @@ export type FileRef = [Uri, Reference[]];
 export type FetchRefRes = {
 	define: Define,
 	fileRefs: FileRef[],
-	activePos: Position,
-	activeUri: RawUri,
 	key: number,
 }
 

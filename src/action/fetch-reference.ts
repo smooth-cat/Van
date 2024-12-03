@@ -46,6 +46,7 @@ export async function fetchReference(pos: Position, uri: Uri) {
       }));
 
       uriItem = relative(uriItem);
+			// TODO: 把 expand 加入到数据中
 			uriItem['active'] = uriActive;
       return [uriItem, handledLocs] as const;
     });

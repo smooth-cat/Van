@@ -26,9 +26,12 @@ export function activate(context: vscode.ExtensionContext) {
 		// 切换选择 或 cursor移动
 		window.onDidChangeTextEditorSelection((e) => emitSelectOrCursorChange(e, provider.msg)),
 		// 文件内容改变
-		workspace.onDidChangeTextDocument(debounce((e) => {
-			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri })
-		})),
+		workspace.onDidChangeTextDocument((e) => {
+			console.log('文档改变', e.contentChanges);
+			debounce((e) => {
+				provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri })
+			})(e)
+		}),
 		// 删除项目文件
 		workspace.onDidDeleteFiles((e) => {
 			provider.msg.emit(MsgType.DeleteFile, { uris: e.files });
