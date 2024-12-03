@@ -91,7 +91,7 @@ const handleDefine = async (dif: (Location | LocationLink)[]) => {
   }
 
   // 声明字符串
-  const declaration = doc.getText(rawRange);
+  const declaration = doc.getText(rawRange).slice(0,60);
 
   return {
     ...loc,
@@ -109,12 +109,12 @@ function extStart(range: Range, len = 60) {
 
 function getText(document: TextDocument, range: Range) {
 	const prefixRange = new Range(new Position(range.start.line, 0), range.start);
-	const suffixRange = new Range(new Position(range.end.line, range.end.character), new Position(range.end.line, 60));
+	const suffixRange = new Range(new Position(range.end.line, range.end.character), new Position(range.end.line, range.end.character + 60));
 	const lineTextRange = extStart(range, 60);
 
-	const prefix = document.getText(prefixRange);
-	const suffix = document.getText(suffixRange);
-  const lineText = document.getText(lineTextRange);
+	const prefix = document.getText(prefixRange).slice(0,60);
+	const suffix = document.getText(suffixRange).slice(0,60);
+  const lineText = document.getText(lineTextRange).slice(0,60);
   const sameLine = range.start.line === range.end.line;
   let name: string;
 
