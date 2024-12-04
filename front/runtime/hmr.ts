@@ -43,7 +43,7 @@ export function useHmr() {
 			})
 			prev.clear!({ deep: true });
 			
-			// hmr Node 只有父节点是复用节点是，才会让子节点挂载 newDoms
+			// hmr Node 只有父节点是复用节点是，才会让子节点挂载 newEls
 			parent!.alternate = true as any;
 			// 生成新的 dom
 			diff(null, hmrNode);
@@ -57,10 +57,10 @@ export function useHmr() {
 			}
 	
 			// 插入对应位置
-			hmrNode.newDoms.forEach((dom) => {
-				pDom.insertBefore(dom, sibDom);
+			hmrNode.newEls.forEach((it) => {
+				pDom.insertBefore(it.dom!, sibDom);
 			});
-			hmrNode.newDoms.clear();
+			hmrNode.newEls.clear();
 		});
 	})
 }

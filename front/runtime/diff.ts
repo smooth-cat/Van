@@ -1,6 +1,7 @@
 import { dfs, dfsFiber, loopParent } from './dfs';
 import { el, fn, IEl, train } from './el';
 import { Component } from './fc';
+import { getVar } from './global';
 import { getMaxInc } from './max-inc';
 import { addPatchBag, PatchBag, PatchType } from './patch';
 import { Func } from './type';
@@ -158,7 +159,12 @@ export const newElBeginWork = (node: IEl) => {
     node.dom = document.createElement(node.$type as string);
     for (const key in node.props) {
       const value = node.props[key];
-      nodeOpr.setDomProps(node, key, value)
+			// 将 ref 收集起来，等到 dom 全部上了屏幕后再触发
+			if(key === 'ref') {
+				typeof value === 'function' && getVar('newRefEls').add(node);
+			} else {
+				nodeOpr.setDomProps(node, key, value)
+			}
     }
   }
   return 0;
@@ -172,11 +178,13 @@ export const newElCpWork = (node: IEl) => {
   while ((point = point.parent) != null) {
 		// 父节点复用了，把新增的节点记在需要 Patch 的子节点上
 		if (point.alternate) {
-			prePoint.newDoms.add(node.dom!)
+			prePoint.newEls.add(node)
       break;
     }
 
     // 父节点是新节点直接使用 appendChild 并退出
+		// 首屏 ROOT 会走这个逻辑，因为首屏 App 没有 alternate，
+		// 那么所有 #app 的直接 dom 都被挂在到 #app 下面
     if (typeof point.$type === 'string' && point.dom) {
       point.dom.appendChild(node.dom!);
 			break;
@@ -253,16 +261,17 @@ export const nodeOpr = {
 	setDomProps(node: IEl, key: string, value: any, prevVal?: any) {
 		const dom = node.dom as HTMLElement;
 		const signal = node.owner?.abortCon.signal;
-		if(key === 'ref') {
-			// 新建元素触发的
-			if(!prevVal && typeof value === 'function') {
-				const cb = value(dom);
-				if(typeof cb === 'function') {
-					node.props['__$_ref_cb'] = cb;
-				}
-			}
-			return;
-		}
+		// TODO: 考虑等 dom 真正挂到 旧 dom 树上后再触发，这样在ref中可以处理父 dom 结构
+		// if(key === 'ref') {
+		// 	// 新建元素触发的
+		// 	if(!prevVal && typeof value === 'function') {
+		// 		const cb = value(dom);
+		// 		if(typeof cb === 'function') {
+		// 			node.props['__$_ref_cb'] = cb;
+		// 		}
+		// 	}
+		// 	return;
+		// }
 
 		if(key.indexOf('on') === 0) {
 			prevVal && dom.removeEventListener(key.slice(2), prevVal)

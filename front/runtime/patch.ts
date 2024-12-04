@@ -70,16 +70,16 @@ function handleAddDelMove (patchSet: Patch[]) {
 		}
 
 		if(type === PatchType.Add ) {
-			const { newDoms } = node;
-			if(newDoms.size === 0) {
+			const { newEls } = node;
+			if(newEls.size === 0) {
 				console.warn('找不到任何新增子节点')
 			} 
 			else {
-				newDoms.forEach((it) => {
-					pDom.insertBefore(it, sibDom);
+				newEls.forEach((it) => {
+					pDom.insertBefore(it.dom!, sibDom);
 				})
 			}
-			newDoms.clear();
+			newEls.clear();
 			continue
 		}
 

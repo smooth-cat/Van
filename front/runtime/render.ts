@@ -75,7 +75,17 @@ function flush() {
 		// 每完成一颗子树就清空其 Patch
 		processPatchList()
 	}
+	fileRefFunc();
 	setVar('flushStatus', FlushStatus.None);
 	console.timeEnd('更新渲染');
 	console.log('更新渲染节点', renderFCs);
+}
+
+/** 在渲染完成后触发可以通过 dom 拿到 parent */
+function fileRefFunc() {
+	const refs = getVar('newRefEls')
+
+	refs.forEach((it) => it.props.ref(it.dom));
+
+	refs.clear();
 }

@@ -23,7 +23,7 @@ export type IEl = {
 	willDestroy?: boolean,
 	index?: number, 
 	owner?: Component,
-	newDoms: Set<HTMLElement|Text>, 
+	newEls: Set<IEl>, 
 } 
 
 export function text(value: any, $children: IEl[]=[]): IEl {
@@ -31,7 +31,7 @@ export function text(value: any, $children: IEl[]=[]): IEl {
 		$type: 'text',
 		props: {value},
 		$children,
-		newDoms: new Set(),
+		newEls: new Set(),
 	};
 	$.clear = clear.bind($);
 	$.firstDom = firstDom.bind($);
@@ -47,7 +47,7 @@ export function el(type: string, props: Record<any, any>= {}, $children: any[]=[
 		$type: type,
 		props,
 		$children,
-		newDoms: new Set(),
+		newEls: new Set(),
 	};
 	$.clear = clear.bind($);
 	$.firstDom = firstDom.bind($);
@@ -66,7 +66,7 @@ export function fn(type: InitFn, props: Record<any, any> = {}): IEl {
 		props,
 		$children: [],
 		level: 0,
-		newDoms: new Set(),
+		newEls: new Set(),
 	};
 	
 	// 给函数生成唯一 id 作为 key 的一部分
@@ -141,8 +141,8 @@ function clear(this: IEl, opt: ClearOpt = {}) {
 	this.level = undefined;
 	this.index = undefined;   
 	this.owner = undefined;
-	this.newDoms.clear();
-	this.newDoms = undefined as any;
+	this.newEls.clear();
+	this.newEls = undefined as any;
 	// console.log('clear el', this.dom ? this.dom : this);
 }
 

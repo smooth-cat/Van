@@ -16,6 +16,7 @@ export const Var = {
 	diffRoots: new PriorityQueue<IEl>((a, b) => a.level! - b.level!),
 	promise: Promise.resolve(),
 	flushStatus: FlushStatus.None,
+	newRefEls: new Set<IEl>(),
 }
 
 
