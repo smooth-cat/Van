@@ -2,6 +2,7 @@ import { Func } from "./type";
 import { getVar } from "./global";
 import { Component } from "./fc";
 import { hasOwn, isObject } from "./util";
+import { clear } from "./clear";
 export type InitFn = (data,props) => any
 
 export type IEl = {
@@ -107,44 +108,44 @@ const DefaultClearOpt = {
 
 type ClearOpt= Partial<typeof DefaultClearOpt>;
 
-function clear(this: IEl, opt: ClearOpt = {}) {
-	opt = { ...DefaultClearOpt, ...opt };
+// function clear(this: IEl, opt: ClearOpt = {}) {
+// 	opt = { ...DefaultClearOpt, ...opt };
 
-	if(opt.deep) {
-		this.$children.forEach((c) => {
-			c.clear?.(opt);
-		})
-	}
+// 	if(opt.deep) {
+// 		this.$children.forEach((c) => {
+// 			c.clear?.(opt);
+// 		})
+// 	}
 
-	if(this.FC) {
-		// console.log('fc clear', this.FC);
+// 	if(this.FC) {
+// 		// console.log('fc clear', this.FC);
 		
-		this.FC.clear();
-		this.FC = undefined;
-	}
-	// this.$type = undefined as any;
-	this.props = undefined as any;
-	// this.clear = undefined;
-	// 双向引用解绑
-	if(this.alternate) {
-		this.alternate.alternate = undefined;
-		this.alternate = undefined;
-	}
-	this.$children = [];
-	this.__i = undefined;
-	this.child = undefined;
-	this.sibling = undefined;
-	this.parent = undefined;
-	// this.dom=undefined;
-	this.firstDom=undefined;
-	this.lastDom=undefined
-	this.level = undefined;
-	this.index = undefined;   
-	this.owner = undefined;
-	this.newEls.clear();
-	this.newEls = undefined as any;
-	// console.log('clear el', this.dom ? this.dom : this);
-}
+// 		this.FC.clear();
+// 		this.FC = undefined;
+// 	}
+// 	// this.$type = undefined as any;
+// 	this.props = undefined as any;
+// 	// this.clear = undefined;
+// 	// 双向引用解绑
+// 	if(this.alternate) {
+// 		this.alternate.alternate = undefined;
+// 		this.alternate = undefined;
+// 	}
+// 	this.$children = [];
+// 	this.__i = undefined;
+// 	this.child = undefined;
+// 	this.sibling = undefined;
+// 	this.parent = undefined;
+// 	// this.dom=undefined;
+// 	this.firstDom=undefined;
+// 	this.lastDom=undefined
+// 	this.level = undefined;
+// 	this.index = undefined;   
+// 	this.owner = undefined;
+// 	this.newEls.clear();
+// 	this.newEls = undefined as any;
+// 	// console.log('clear el', this.dom ? this.dom : this);
+// }
 
 function firstDom(this: IEl) {
 	// if(this.memoFirst) return this.memoFirst;

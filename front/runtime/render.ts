@@ -74,8 +74,9 @@ function flush() {
 		// }
 		// 每完成一颗子树就清空其 Patch
 		processPatchList()
+		// 子树已经到页面上了，子树中的 ref 应立即触发，否则 后续的更新渲染 可能导致 ref 在错误的时间触发
+		fileRefFunc();
 	}
-	fileRefFunc();
 	setVar('flushStatus', FlushStatus.None);
 	console.timeEnd('更新渲染');
 	console.log('更新渲染节点', renderFCs);
