@@ -3,7 +3,7 @@ import { FetchRefRes, MsgType, ReqType, CursorMoveKind, Uri, Reference, FileRef 
 import { AsyncState, useAsync } from "../hook/use-async";
 import { FC } from "../runtime/type";
 import { Events, msg } from "../util/var";
-import { Detail, Props } from "./detail";
+import { Detail, IActive, Props } from "./detail";
 import { el, fn } from "../runtime/el";
 import { info } from "../components/toast";
 import { useEvent } from "../hook/useEvent";
@@ -17,10 +17,7 @@ export type WrapperProps = {
 type WrapperData = {
 	refs: AsyncState<FetchRefRes>;
 	detailStack: any[];
-	active: {
-		uri?: Uri,
-		reference?: Reference,
-	}
+	active: IActive
 }
 
 
@@ -28,6 +25,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 	data.active = {
 		uri: undefined,
 		reference: undefined,
+		index: undefined,
 	}
 
 	function findActiveByProp(fileRefs: FileRef[]) {
@@ -88,7 +86,15 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 			return this.value;
 		}
 	}, function() {
-		if(!this.found) return;
+		if(!this.found) {
+			// 无found 说明 激活位置已存在，若激活位置已不在视口内依然需要滚动到该位置
+			if(data.active.uri) {
+				const id = data.active.index![1];
+				data.active.uri.expand = true;
+				data.active.uri.scroll = { id };
+			}
+			return;
+		}
 		if(data.active.uri && data.active.reference) {
 			// 把原来的激活取消
 			data.active.uri.active = false;
@@ -100,9 +106,12 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 		const newUri = value.fileRefs[i][0];
 		const newReference = value.fileRefs[i][1][j];
 		newUri.active = true;
+		newUri.expand = true;
+		newUri.scroll = { id: j };
 		newReference.active = true;
 		data.active.uri = newUri;
 		data.active.reference = newReference;
+		data.active.index = this.found;
 	})
 
 	msg.on(MsgType.CursorMove, ({ uri, pos,  kind }) => handleMoveOrSelect(uri, pos, kind))
@@ -132,7 +141,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 
 		return [
 			el('div', {  }, [
-				showDetail && fn(Detail, { key, fileRefs, define, close: reset })
+				showDetail && fn(Detail, { active: data.active, key, fileRefs, define, close: reset })
 			])
 		]
 	}

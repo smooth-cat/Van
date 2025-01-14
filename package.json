@@ -99,6 +99,7 @@
 	},
 	"dependencies": {
 		"@vue/reactivity": "^3.5.12",
+		"scrollv": "^0.0.13",
 		"watchable-proxy": "^2.0.8"
 	}
 }

@@ -1,6 +1,7 @@
 import { el, fn, text } from "../runtime/el";
 import { onUnmount } from "../runtime/life-circle";
 import { FC } from "../runtime/type";
+import { mountTest } from "./diffObj";
 
 export const App: FC = (data) => {
 	data.value = '你好';
@@ -66,4 +67,4 @@ const gChild: FC = (data) => {
 		]
 	}
 }
-
+mountTest();

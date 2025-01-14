@@ -130,3 +130,10 @@ export const posInReference = (uri1: Uri|undefined, pos1: Position|undefined, ur
 	const inRange = isFormer(start, pos1, true) && isFormer(pos1, end);
 	return uriEq && inRange;
 }
+
+
+export const exchange = (arr: any[], i: number, j: number) => {
+  const temp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = temp;
+};

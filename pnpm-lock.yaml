@@ -11,6 +11,9 @@ importers:
       '@vue/reactivity':
         specifier: ^3.5.12
         version: 3.5.13
+      scrollv:
+        specifier: ^0.0.13
+        version: 0.0.13
       watchable-proxy:
         specifier: ^2.0.8
         version: 2.0.8
@@ -1949,6 +1952,9 @@ packages:
   schema-utils@4.2.0:
     resolution: {integrity: sha512-L0jRsrPpjdckP3oPug3/VxNKt2trR8TcabrM6FOAAlvC/9Phcmm+cuAgTlxBqdBR1WJx7Naj9WHw+aOmheSVbw==}
     engines: {node: '>= 12.13.0'}
+
+  scrollv@0.0.13:
+    resolution: {integrity: sha512-7cqyLdYcg9ksxp6HUDtyqlYg2GtQCKoyxTgixN9rFUki3AcGvNoyWzwoXeZoj2LGTERryMk4EK6vshT7MWZ04g==}
 
   select-hose@2.0.0:
     resolution: {integrity: sha512-mEugaLK+YfkijB4fx0e6kImuJdCIt2LxCRcbEYPqRGCs4F2ogyfZU5IAZRdjCP8JPq2AtdNoC/Dux63d9Kiryg==}
@@ -4271,6 +4277,8 @@ snapshots:
       ajv: 8.17.1
       ajv-formats: 2.1.1(ajv@8.17.1)
       ajv-keywords: 5.1.0(ajv@8.17.1)
+
+  scrollv@0.0.13: {}
 
   select-hose@2.0.0: {}
 

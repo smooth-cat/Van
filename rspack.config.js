@@ -13,6 +13,18 @@ module.exports = {
 		host: '127.0.0.1',
 		port: 8080,
 		hot: true,
+		client: {
+      overlay: {
+        runtimeErrors: (error) => {
+          if(error?.message === "ResizeObserver loop completed with undelivered notifications.")
+          {
+             console.error(error)
+             return false;
+          }
+          return true;
+        },
+      },
+    },
 		// watchFiles: ['front/**/*'],
 		// liveReload: true,
   },

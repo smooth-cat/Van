@@ -3,6 +3,8 @@ import { DocumentSymbol, Location, Position, Range, Uri as RawUri } from "vscode
 export type Uri = RawUri & {
 	relativePath: string;
 	active: boolean;
+	expand: boolean;
+	scroll?: { id: number };
 }
 
 export enum MsgType {

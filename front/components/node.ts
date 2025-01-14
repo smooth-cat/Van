@@ -20,6 +20,7 @@ export const Node: FC<Data, Props> = (data, props) => {
 
 	const clickDetailBtn = () => {
 		const { value: { range }, uri } = props;
+		// TODO:  range[0] 不是标识符的正确位置，其包含了 const export 等关机键字
 		msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(range[0])])
 	}
 

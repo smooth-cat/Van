@@ -1,5 +1,5 @@
-import { Position, Uri } from 'vscode';
-import { FetchRefRes, Reference, ReqType } from '../../shared/var';
+import { Position } from 'vscode';
+import { FetchRefRes, Reference, ReqType, Uri } from '../../shared/var';
 import { Expand } from '../components/expand';
 import { useEvent } from '../hook/useEvent';
 import { iArrow } from '../icon';
@@ -9,31 +9,56 @@ import { FC } from '../runtime/type';
 import { use } from '../runtime/context';
 import { AsyncState } from '../hook/use-async';
 import { msg } from '../util/var';
-import { toRaw } from '@vue/reactivity';
+import { toRaw, watch } from '@vue/reactivity';
+import { onUnmount } from '../runtime/life-circle';
 export type Props = {
-
+	uri: Uri
 }
 type Data = {
-	expand: boolean;
 }
 
 export const DetailFile: FC<Data, Props> = (data, props) => {
 
-	data.expand = true;
-	
-	useEvent('refs-expand', (exp: boolean) => {
-		data.expand = exp;
-	})
-
-
 	function expand() {
-		data.expand  = !data.expand
+		props.uri.expand = !props.uri.expand
 	}
 
 	function gotoRef(pos: Position) {
 		const { uri } = props;
 		msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(pos)])
 	}
+
+	// let dom: HTMLElement;
+	// const scrollTrack = (d: HTMLElement) => {
+	// 	dom = d;
+	// 	handleScroll(props.uri.scroll);
+	// }
+
+	// const handle = watch(() => props.uri.scroll, handleScroll)
+
+	// function handleScroll(val: { id: number }) {
+	// 	if(!val || !dom) return;
+	// 	const i: number = val.id;
+	// 	// 计算第 i 项是否在视口内
+	// 	const parent = dom.parentElement
+	// 	const parentH = parent!.offsetHeight
+	// 	const start = parent!.scrollTop;
+	// 	const end = start + parentH;
+
+	// 	const top = dom.offsetTop + /* title */32 + i * /* item */28.5;
+	// 	const bottom = top+28.5;
+
+	// 	const inView = top >= start && bottom <= end;
+
+	// 	if(!inView) {
+	// 		parent!.scrollTo({ top: top - parentH/2, behavior: 'smooth' })
+	// 	}
+	// }
+
+	onUnmount(() => {
+		// handle.stop();
+		// dom = undefined as any;
+	})
 
 	return () => {
     const { uri, refs } = props;
@@ -46,7 +71,7 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
       el('div', { class: 'ref-file' }, [
         el('div', { class: `file-title ${uri.active ? 'active-file' : ''} ` }, [
 					// TODO: 使用 icon-font
-          fn(Icon, { class: `file-expand ${data.expand ? 'expanded' : ''}`, i: iArrow, size: 15, onclick: expand }),
+          fn(Icon, { class: `file-expand ${uri.expand? 'expanded' : ''}`, i: iArrow, size: 15, onclick: expand }),
           el('div', { class: 'file-name' }, [text(fileName)]),
           el('div', { class: 'file-path ellipsis', title: uri.relativePath }, [text(uri.relativePath)])
         ]),
@@ -84,10 +109,10 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
               }, [])
             )
           ],
-          expand: data.expand
-        })
+          expand: uri.expand
+        }),
+				el('div', { class: 'ref-file-divide' })
       ]),
-      el('div', { class: 'ref-file-divide' })
     ];
   };
 }

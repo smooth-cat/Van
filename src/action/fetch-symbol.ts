@@ -25,6 +25,7 @@ export async function fetchSymbol(uri?: Uri) {
 			(item) => {
 				const newNode = pick(item, ['name', 'location' as any, 'kind']);
 				newNode.range = item?.['location']?.range;
+				// TODO: var 类型在 ts 包含了 type、箭头函数
 				item['newNode'] = newNode;
 		}, (item, stack) => {
 			const parent = stack[stack.length - 2];

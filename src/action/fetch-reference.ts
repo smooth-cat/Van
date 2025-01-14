@@ -1,6 +1,6 @@
-import { Location, Position, Uri, commands, TextDocument, workspace, Range, LocationLink } from 'vscode';
+import { Location, Position, Uri, commands, TextDocument, workspace, Range, LocationLink, CallHierarchyItem } from 'vscode';
 import { fromPos } from '../methods';
-import { sortBy } from '../../shared/utils';
+import { exchange, sortBy } from '../../shared/utils';
 
 export async function fetchReference(pos: Position, uri: Uri) {
   pos = fromPos(pos);
@@ -10,6 +10,19 @@ export async function fetchReference(pos: Position, uri: Uri) {
   const iToDocI = new Map<number, number>();
 
   let docIdx = 0;
+	// TODO: 考虑需要通过 IncomingCalls 获取函数引用的上下文来提供更多信息吗
+	// commands.executeCommand('vscode.prepareCallHierarchy', uri, pos).then((v) => {
+	// 	(v as CallHierarchyItem[]).forEach((it: CallHierarchyItem) => {
+	// 		commands.executeCommand('vscode.provideIncomingCalls', it).then((provideIncomingCalls) => {
+	// 			console.log({ provideIncomingCalls });
+	// 		})
+	// 		commands.executeCommand('vscode.provideOutgoingCalls', it).then((provideOutgoingCalls) => {
+	// 			console.log({ provideOutgoingCalls });
+	// 		})
+	// 	});
+	// 	console.log('prepareCallHierarchy', v)
+	// })
+
   try {
     const p = Promise.all([
       commands.executeCommand('vscode.executeDefinitionProvider', uri, pos),
@@ -36,8 +49,17 @@ export async function fetchReference(pos: Position, uri: Uri) {
 
     const define = res[res.length - 1];
 
+		let defineI: number|undefined =  undefined;
+		let activeI: number|undefined =  undefined;
     const fileRefs = sortEntry.map(([uriItem, locs], i) => {
+			if(define?.uri?.path === uriItem.path) {
+				defineI = i;
+			}
+
 			const uriActive = uriItem.path === uri.path;
+			if(uriActive) {
+				activeI = i;
+			}
       const doc = res[i];
       const handledLocs = locs.map(loc => ({
         ...loc,
@@ -46,10 +68,23 @@ export async function fetchReference(pos: Position, uri: Uri) {
       }));
 
       uriItem = relative(uriItem);
-			// TODO: 把 expand 加入到数据中
 			uriItem['active'] = uriActive;
+			uriItem['expand'] = true;
       return [uriItem, handledLocs] as const;
     });
+
+		if(activeI != null &&  activeI !== 0) {
+			exchange(fileRefs, 0, activeI);
+		}
+
+		// 定义和 active 相同说明已经位移过了不需要动
+		if(defineI != null && defineI !== activeI) {
+			// 修正 defineI 的位置
+			defineI === 0 && (defineI = activeI);
+			if(defineI !== 1) {
+				exchange(fileRefs, 1, defineI!);
+			}
+		}
 
     return {
       fileRefs,
