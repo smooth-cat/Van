@@ -1,5 +1,5 @@
 import { dfs } from "./dfs";
-import { diff, nodeOpr } from "./diff";
+import { diff, fileRefFunc, nodeOpr } from "./diff";
 import { fn, IEl } from "./el";
 import { __Internal_Event__ } from "./global";
 import { findParentAndSib, loopChildrenDom } from "./patch";
@@ -61,6 +61,7 @@ export function useHmr() {
 				pDom.insertBefore(it.dom!, sibDom);
 			});
 			hmrNode.newEls.clear();
+			fileRefFunc();
 		});
 	})
 }

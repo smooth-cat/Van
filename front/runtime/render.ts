@@ -1,5 +1,5 @@
 import { effect, ReactiveEffect } from "@vue/reactivity";
-import { diff, nodeOpr } from "./diff";
+import { diff, fileRefFunc, nodeOpr } from "./diff";
 import { el, fn, IEl, train } from "./el";
 import { Func } from "./type";
 import { FlushStatus, getVar, setVar } from "./global";
@@ -14,6 +14,7 @@ export const render = (app: IEl, dom: HTMLElement) => {
 	ROOT.dom = dom;
 	ROOTS.add(ROOT);
 	diff(null, app);
+	fileRefFunc();
 	console.timeEnd('首屏渲染');
 	console.log('渲染完成', window['roots']);
 	return ROOT;
@@ -80,13 +81,4 @@ function flush() {
 	setVar('flushStatus', FlushStatus.None);
 	console.timeEnd('更新渲染');
 	console.log('更新渲染节点', renderFCs);
-}
-
-/** 在渲染完成后触发可以通过 dom 拿到 parent */
-function fileRefFunc() {
-	const refs = getVar('newRefEls')
-
-	refs.forEach((it) => it.props.ref(it.dom));
-
-	refs.clear();
 }

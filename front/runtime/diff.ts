@@ -144,6 +144,20 @@ export const reuseFCCpWork = (node: IEl) => {
 };
 
 /*----------------- 原生节点相关 diff -----------------*/
+/** 在渲染完成后触发可以通过 dom 拿到 parent */
+export function fileRefFunc() {
+	const refs = getVar('newRefEls')
+
+	refs.forEach((it) => {
+		try {
+			it.props.ref(it.dom)
+		} catch (error) {
+			debugger;
+		}
+	});
+
+	refs.clear();
+}
 /** bg 新增节点，创建节点 */
 export const newElBeginWork = (node: IEl) => {
   // 执行条件
