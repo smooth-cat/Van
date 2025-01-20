@@ -293,20 +293,24 @@ export const nodeOpr = {
 		} else {
 			if(key === 'style') {
 				this.setDomStyle(dom, value);
-			} else {
+			} 
+			else if(key === 'value') {
+				dom['value'] = value == null ? '' : value.toString();
+			}
+			else {
 				dom.setAttribute(key, value == null ? '' : value.toString());
 			}
 		}
 	},
 	setDomStyle(dom: HTMLElement, value: string) {
 		value.split(';').forEach((str) => {
-			let [key, value] = str.split(':');
-			if(key == null || value == null) return;
+			let [key, styleValue] = str.split(':');
+			if(key == null || styleValue == null) return;
 
 			key = key.trim();
-			value = value.trim();
-			if(key && value) {
-				dom.style.setProperty(key, value);
+			styleValue = styleValue.trim();
+			if(key && styleValue) {
+				dom.style.setProperty(key, styleValue);
 			}
 		})
 	},
