@@ -1,15 +1,14 @@
-import { toRaw, toReactive } from "@vue/reactivity";
-import { FetchRefRes, MsgType, ReqType, CursorMoveKind, Uri, Reference, FileRef } from "../../shared/var";
+import { toRaw } from "@vue/reactivity";
+import { FetchRefRes, MsgType, ReqType, RefreshKind, Uri, Reference, FileRef } from "../../shared/var";
 import { AsyncState, useAsync } from "../hook/use-async";
 import { FC } from "../runtime/type";
-import { Events, msg } from "../util/var";
+import { msg } from "../util/var";
 import { Detail, IActive, Props } from "./detail";
 import { el, fn } from "../runtime/el";
 import { info } from "../components/toast";
-import { useEvent } from "../hook/useEvent";
-import { inject } from "../runtime/context";
 import { Position } from "vscode";
-import { equalPos, isFormer, posInReference } from "../../shared/utils";
+import { isFormer, posInRange } from "../../shared/utils";
+import { onUnmount } from "../runtime/life-circle";
 
 export type WrapperProps = {
 	
@@ -56,20 +55,32 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 				}				
 			}
 	}
-
-	const [run, reset] = useAsync('refs', async function(uri, pos, kind: CursorMoveKind) {
+	/**
+	 * 更新 define 嵌套层级
+	 * 1. 初始化
+	 * 
+	 * 更新 active 嵌套层级
+	 * 1. 初始化
+	 * 2. 激活点位移动
+	 */
+	const [run, reset] = useAsync('refs', async function(uri, pos, kind: RefreshKind) {
 		const rData = toRaw(data);
-		// 有详情时，移动位置在包含在详情内则不需重新加载，只改变 激活位置即可
-		if(hasRefs()) {
-			// 与激活位置相同则说明不需要更新
-			if(posInReference(uri, pos, rData.active.uri, rData.active.reference?.range)) {
-				return this.value;
-			}
+		if(kind === RefreshKind.DocEdit) {
 
-			// 在当前引用内，只需更新激活位置，不需要重新获取
-			this.found = findActiveByPos(uri, pos, rData);
-			if(this.found) {
-				return this.value;
+		} 
+		else {
+			// 有详情时，移动位置在包含在详情内则不需重新加载，只改变 激活位置即可
+			if(hasRefs()) {
+				// 与激活位置相同则说明不需要更新
+				if(posInRange(uri, pos, rData.active.uri, rData.active.reference?.range)) {
+					return this.value;
+				}
+	
+				// 在当前引用内，只需更新激活位置，不需要重新获取
+				this.found = findActiveByPos(uri, pos, rData);
+				if(this.found) {
+					return this.value;
+				}
 			}
 		}
 
@@ -82,7 +93,9 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 			this.found = findActiveByProp(fileRefs);
 			return { ...res.data, key: performance.now() };
 		} else {
-			info('未找到任何引用!');
+			if(ENV !== 'dev') {
+				info('未找到任何引用!');
+			}
 			return this.value;
 		}
 	}, function() {
@@ -114,13 +127,42 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 		data.active.index = this.found;
 	})
 
-	msg.on(MsgType.CursorMove, ({ uri, pos,  kind }) => handleMoveOrSelect(uri, pos, kind))
-	msg.on(MsgType.SelectionChange, ({ uri, former,  kind }) => handleMoveOrSelect(uri, former, kind));
+	const dispose1 = msg.on(MsgType.CursorMove, ({ uri, pos,  kind }) => handleMoveOrSelect(uri, pos, kind))
+	const dispose2 = msg.on(MsgType.SelectionChange, ({ uri, former,  kind }) => handleMoveOrSelect(uri, former, kind));
+	const dispose3 = msg.on(MsgType.CodeChanged, async({ uri }: { uri: Uri }) => {
+		const rData = toRaw(data);
+		if(!hasRefs()) return;
+		const define = rData.refs.value.define;
+		const fileRefs = rData.refs.value.fileRefs;
 
+		const { nestStruct } = define;
+		let newDefinePos: Position;
+		// 改的是定义文件，需要重新查询定义所处的位置
+		if(uri.path === define.uri.path) {
+			const res = await msg.request<Position|undefined>(ReqType.Command, ['fetchSymbolPos', toRaw(define.uri), nestStruct]);
+			if(!res.data) return;
+			newDefinePos = res.data;
+			run(uri, define.range[0], RefreshKind.DocEdit);
+		} 
+		// 改的是激活文件
+		else if (uri.path === rData.active.uri?.path) {
+			run(uri, define.range[0], RefreshKind.DocEdit);
+		}
+		// 改的既不是激活项，也不是定义项则直接使用激活项重新渲染 
+		else {
+			run(uri, rData.active.reference?.range[0], RefreshKind.DocEdit);
+		}
+	})
+
+	onUnmount(() => {
+		dispose1();
+		dispose2();
+		dispose3();
+	})
 
 	function handleMoveOrSelect(uri, pos , kind) {
 		// 如果移动到引用列表的任意位置则继续
-		const shouldRefresh = [CursorMoveKind.Mouse, CursorMoveKind.BackOrForward, CursorMoveKind.GotoLocation].includes(
+		const shouldRefresh = [RefreshKind.Mouse, RefreshKind.BackOrForward, RefreshKind.GotoLocation, RefreshKind.DocEdit].includes(
       kind
     );
 		if(shouldRefresh) {
@@ -145,33 +187,4 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 			])
 		]
 	}
-}
-
-const useDetailStack = (data) => {
-	const detailStack = toReactive([]);
-	data.detailStack = detailStack;
-	const stackIns = new DetailStack(detailStack);
-	return stackIns
-}
-
-class DetailStack {
-	constructor(public stack: any[], max = 15) {}
-
-	push = (...args: any[]) => {
-		const newLen = this.stack.push(...args);
-		if(newLen > 15) {
-			this.stack.splice(0, newLen - 15);
-			return 15
-		}
-		return newLen;
-	}
-	pop  = () => {
-		return  this.stack.pop();
-	}
-
-	peek = () => {
-		return this.stack[this.stack.length-1];
-	}
-
-
 }

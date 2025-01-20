@@ -1,6 +1,6 @@
 import { commands, Location, Position, Range, TextEditorSelectionChangeEvent, window } from 'vscode';
 import { Message } from '../../shared/message';
-import { MsgType, CursorMoveKind } from '../../shared/var';
+import { MsgType, RefreshKind } from '../../shared/var';
 import { debounce, isFormer } from '../../shared/utils';
 
 const isCursorMove = (a: Position, b: Position) => {
@@ -84,9 +84,9 @@ export const handleCommandMove = (msg) => {
 	console.log('handleCommandMove', cursor, uri);
 	
 	if(cursor == null || uri == null) return;
-	msg.emit(MsgType.CursorMove, {pos: cursor, uri, kind: CursorMoveKind.BackOrForward });
+	msg.emit(MsgType.CursorMove, {pos: cursor, uri, kind: RefreshKind.BackOrForward });
 }
 
 export const handleGotoLocation = (uri, pos, msg) => {
-	msg.emit(MsgType.CursorMove, { uri, pos,  kind: CursorMoveKind.GotoLocation });
+	msg.emit(MsgType.CursorMove, { uri, pos,  kind: RefreshKind.GotoLocation });
 }

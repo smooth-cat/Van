@@ -1,15 +1,11 @@
-import { Location, Position, Uri, commands, TextDocument, workspace, Range, LocationLink, CallHierarchyItem } from 'vscode';
-import { fromPos } from '../methods';
+import { Location, Position, Uri, commands, TextDocument, workspace, Range, LocationLink, DocumentSymbol } from 'vscode';
+import { fromPos, getSymbolNestStruct } from '../methods';
 import { exchange, sortBy } from '../../shared/utils';
 
 export async function fetchReference(pos: Position, uri: Uri) {
   pos = fromPos(pos);
   uri = Uri.from(uri);
 
-  const docMap = new Map<Uri, Thenable<TextDocument>>();
-  const iToDocI = new Map<number, number>();
-
-  let docIdx = 0;
 	// TODO: 考虑需要通过 IncomingCalls 获取函数引用的上下文来提供更多信息吗
 	// commands.executeCommand('vscode.prepareCallHierarchy', uri, pos).then((v) => {
 	// 	(v as CallHierarchyItem[]).forEach((it: CallHierarchyItem) => {
@@ -116,8 +112,17 @@ const handleDefine = async (dif: (Location | LocationLink)[]) => {
 
     loc = new Location(first.targetUri, range);
   }
-  const doc = await workspace.openTextDocument(loc.uri);
+  const docP = workspace.openTextDocument(loc.uri);
 
+	const symbolsP = (commands.executeCommand<DocumentSymbol[]>(
+		'vscode.executeDocumentSymbolProvider',
+		loc.uri,
+	));
+
+	const [doc, docSymbols] = await Promise.all([docP, symbolsP]);
+
+	const nestStruct = getSymbolNestStruct(docSymbols, loc.range.start);
+	console.log({ nestStruct, docSymbols });
   const uri = relative(loc.uri);
 
   let rawRange = first instanceof Location ? first.range : first.targetRange;
@@ -133,7 +138,8 @@ const handleDefine = async (dif: (Location | LocationLink)[]) => {
     ...loc,
     uri,
     ...getText(doc, loc.range),
-    declaration
+    declaration,
+		nestStruct,
   };
 };
 

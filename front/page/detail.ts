@@ -1,11 +1,11 @@
-import { Define, FileRef, Reference, Uri } from '../../shared/var';
+import { Define, FileRef, MsgType, Reference, Uri } from '../../shared/var';
 import { el, fn, text } from '../runtime/el';
 import { FC } from '../runtime/type';
 import './detail.less';
 import { Icon } from '../icon/fc';
-import { iClose, iDecSquare, iPlusSquare, iPrevious } from '../icon';
+import { iClose, iDbExp, iDecSquare, iPlusSquare, iPrevious } from '../icon';
 import { DetailFile } from './detail-ref-file';
-import { Events } from '../util/var';
+import { Events, msg } from '../util/var';
 import { Tooltip } from '../components/tooltip';
 import { AutoHeight } from 'scrollv';
 import { onUnmount } from '../runtime/life-circle';
@@ -104,6 +104,16 @@ export const Detail: FC<Data, Props> = (data, props) => {
             text('引用'),
             el('span', {}, [text(' references')]),
             el('div', { class: 'tools' }, [
+              // fn(Tooltip, {
+              //   els: [fn(Icon, { i: iDbExp, size: 19, onclick: expandFolder })],
+              //   tip: '全部展开',
+              //   type: 'bottom'
+              // }),
+							// fn(Tooltip, {
+              //   els: [fn(Icon, { class: 'reverse', i: iDbExp, size: 19, onclick: closeFolder })],
+              //   tip: '全部折叠',
+              //   type: 'bottom-right'
+              // })
               fn(Tooltip, {
                 els: [el('div', { class: 'plus-icon', onclick: expandFolder })],
                 tip: '全部展开',

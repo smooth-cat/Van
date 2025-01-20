@@ -1,7 +1,6 @@
 import { Position } from 'vscode';
 import { FetchRefRes, Reference, ReqType, Uri } from '../../shared/var';
 import { Expand } from '../components/expand';
-import { useEvent } from '../hook/useEvent';
 import { iArrow } from '../icon';
 import { Icon } from '../icon/fc';
 import { el, fn, text } from '../runtime/el';

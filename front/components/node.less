@@ -1,11 +1,61 @@
 
-.doc-node {
-	.self {
-		.name {
-			cursor: pointer;
-		}
+.outline {
+	.symbol-expand {
+		color: var(--label-solid);
+	}
+	.symbol-expand.hideExpand {
+		opacity: 0;
+		pointer-events: none;
+	}
+	.symbol-expand.open {
+		transform: rotate(90deg);
 	}
 	.children {
+		display: grid;
+		grid-template-columns: auto auto 1fr;
+		column-gap: 2px;
+		// 嵌套的children 占一整行
 		padding-left: 8px;
 	}
+	.name {
+		// font-family: var(--vscode-editor-font-family);
+		// font-family: Menlo;
+		cursor: pointer;
+		padding-left: 2px;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		vertical-align: bottom;
+		display: flex;
+		align-items: flex-end;
+		.highlight {
+			color: var(--cg-color-highlight);
+		}
+		.nameLine {
+			transform: scale(0.8) translateY(-1px);
+			transform-origin: 100% 100%;
+			margin-left: 4px;
+			font-size: var(--fz-xs);
+		}
+	}
+	.expand-children {
+		grid-column-start: 1;
+		grid-column-end: 4;
+		position: relative;
+		&::after {
+			content: '';
+			display: block;
+			width: 1px;
+			background-color: var(--label-opacity5);
+			position: absolute;
+			height: 100%;
+			left: 7px;
+			top: 0;
+			z-index: 1;
+		}
+	}
+}
+
+.mt6 {
+	margin-top: 8px;
 }

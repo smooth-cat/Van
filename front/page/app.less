@@ -7,8 +7,10 @@
 	--cg-color: rgb(210, 210, 210);
 	--cg-color-fade: rgba(179, 179, 179, 0.66);
 	--cg-color-highlight: #00b9a2;
+	--cg-bg-highlight: #2d9b8e;
 	--cg-bg: #0d1117;
 	--cg-bg-fade: #16191c;
+	--cg-bg-fade-op: #16191c89;
 
 	--cg-border: #7c7c7c4a;
 	--cg-box-shadow: 0px 0px 3px rgb(198, 198, 198);
@@ -31,6 +33,7 @@ html,body {
 	overflow: hidden;
 	background: var(--cg-bg);
 	color: var(--cg-color);
+	padding: 0;
 }
 
 body * {
@@ -102,4 +105,17 @@ body * {
 		margin: 0;
 		padding: 0;
 	}
+}
+
+
+.label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2px 3px;
+	border-radius: 2px;
+	font-size: var(--fz-xs);
+	min-width: 31px;
+	font-weight: bold;
+	user-select: none;
 }

@@ -20,6 +20,9 @@ export class Message {
     const suber = this.subMap.get(type) || new Set<Func>();
     suber.add(fn);
     this.subMap.set(type, suber);
+		return () => {
+			suber.delete(fn);
+		}
   };
 
   handleMessage = (msg: any) => {

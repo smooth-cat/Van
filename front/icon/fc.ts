@@ -9,9 +9,9 @@ export const Icon = (data, props) => {
 	}
 
 	return () => {
-		const { i, ...divProps } = props;
+		const { i, style: passStyle='', ...divProps } = props;
 		const extClass = divProps.class ? divProps.class + ' icon-wrap' : 'icon-wrap';
-		let style = props.size ? `font-size: ${props.size}px` : ''
+		let style = props.size ? `${passStyle};font-size: ${props.size}px;` : passStyle
 
 		return [
 			el('div', { ref, ...divProps, class: extClass, style })

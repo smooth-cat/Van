@@ -123,7 +123,7 @@ export const equalPos = (uri1: Uri|undefined, pos1: Position|undefined, uri2: Ur
 }
 
 /** @deprecated 仅 webview */
-export const posInReference = (uri1: Uri|undefined, pos1: Position|undefined, uri2: Uri|undefined, range: IRange|undefined) => {
+export const posInRange = (uri1: Uri|undefined, pos1: Position|undefined, uri2: Uri|undefined, range: IRange|undefined) => {
 	if(!uri1 || !uri2 || !pos1 || !range) return false;
 	const uriEq = uri1.path === uri2.path;
 	const [start, end] = range;
