@@ -233,7 +233,6 @@ export const reuseElBeginWork = (node: IEl) => {
 /** cp 复用原生节点比较 props 打补丁 */
 export const reuseElCpWork = (node: IEl) => {
   if (!(isEl(node) && node.alternate != null)) return null;
-	// TODO: 新 props 产生时应该删除旧 dom 上不需要的 props
   const patcher = new PatchBag();
   const prevNode = node.alternate!;
 	const prevKeys = new Set(Object.keys(prevNode.props));

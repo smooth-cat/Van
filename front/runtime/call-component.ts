@@ -1,5 +1,5 @@
+// TODO: 不应该依赖 shared 包
 import { BaseEvent } from "../../shared/message/event";
-import { ExtPromise } from "../../shared/promise";
 import { fn, IEl } from "./el";
 import { render, unmount } from "./render";
 import { FC } from "./type";
