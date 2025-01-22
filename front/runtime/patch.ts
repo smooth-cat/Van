@@ -6,6 +6,7 @@ export enum PatchType {
 	Del,
 	Move,
 	PropChange,
+	PropsDel,
 }
 
 type Patch = {
@@ -141,6 +142,13 @@ function siblingDom(node: IEl) {
 
 function handlePropChange (patchSet: Patch[]) {
 	patchSet.forEach((it) => {
+		if(it.type === PatchType.PropsDel) {
+			// TODO: 目前不考虑 Text 节点
+			const { node, key, prevValue } = it.data;
+			nodeOpr.delDomProps(node, key, prevValue);
+			return;
+		}
+
 		const { key, value, isText, node, prevVal } = it.data;
 		if(isText) {
 			node.dom.textContent = value == null ? '' : value.toString()
@@ -152,7 +160,7 @@ function handlePropChange (patchSet: Patch[]) {
 
 export function processPatchList() {
 	patchList.forEach((bag) => {
-		if(bag.types.has(PatchType.PropChange)) {
+		if(bag.types.has(PatchType.PropChange) || bag.types.has(PatchType.PropsDel)) {
 			handlePropChange(bag.patchSet);
 		} else {
 			handleAddDelMove(bag.patchSet);

@@ -54,6 +54,18 @@ export function el(type: string, props: Record<any, any>= {}, $children: any[]=[
 	$.firstDom = firstDom.bind($);
 	$.lastDom = lastDom.bind($);
 
+	// 给 ref 上 id 保证 diff 时 ref 的对象是唯一确定
+	if(props.ref) {
+		const ref = props.ref;
+		// 给函数生成唯一 id 作为 key 的一部分
+		if (!hasOwn(ref, 'toString')) {
+			ref['id'] = ++id;
+			ref.toString = function () {
+				return this.id;
+			};
+		} 
+	}
+
 	initOwner($);
 	train($);
 

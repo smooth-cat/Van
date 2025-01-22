@@ -96,17 +96,30 @@ export const reuseFCBeginWork = (node: IEl) => {
 	prev.FC = undefined; // 避免在销毁节点时影响到新节点
 
 
-
+	const delKeys = new Set(Object.keys(prev.props));
 	let changedProps = {};
 	// props 触发的更新
 	let propsChanged = false;
 	for (const key in props) {
+		delKeys.delete(key);
 		const value = props[key];
 		const prevVal = prev.props[key];
 		if(!Object.is(value, prevVal)) {
 			propsChanged = true;
 			changedProps[key] = value;
 		}
+	}
+
+	/**
+	 * 发生情况：fn1 和 fn2 type 相同且无 key
+	 * fn1  <- alternate ->  fn2
+	 * fn2
+	 */
+	if(delKeys.size) {
+		propsChanged = true;
+		delKeys.forEach((k) => {
+			changedProps[k] = undefined;
+		})
 	}
 
 	// data 触发的重渲染
@@ -220,12 +233,14 @@ export const reuseElBeginWork = (node: IEl) => {
 /** cp 复用原生节点比较 props 打补丁 */
 export const reuseElCpWork = (node: IEl) => {
   if (!(isEl(node) && node.alternate != null)) return null;
-
+	// TODO: 新 props 产生时应该删除旧 dom 上不需要的 props
   const patcher = new PatchBag();
   const prevNode = node.alternate!;
+	const prevKeys = new Set(Object.keys(prevNode.props));
   for (const key in node.props) {
     const value = node.props[key];
     const prevVal = prevNode.props[key];
+		prevKeys.delete(key);
     if (!Object.is(value, prevVal)) {
       patcher.patch(PatchType.PropChange, {
 				key,
@@ -236,6 +251,16 @@ export const reuseElCpWork = (node: IEl) => {
       });
     }
   }
+
+	if(prevKeys.size > 0) {
+		prevKeys.forEach((key) => {
+			patcher.patch(PatchType.PropsDel, {
+				key,
+				prevValue: prevNode.props[key],
+				node,
+			})
+		})
+	}
 
 	// 拷贝 __$_ref_cb 回调函数用于删除
 	if(prevNode.props['__$_ref_cb']) {
@@ -272,6 +297,18 @@ export const nodeOpr = {
       b.alternate = a;
     }
   },
+	delDomProps(node: IEl, key: string, prevVal: any) {
+		const dom = node.dom as HTMLElement;
+		if(key.indexOf('on') === 0) {
+			dom.removeEventListener(key.slice(2), prevVal)
+		} 		
+		else if(key === 'value') {
+			dom['value'] = '';
+		}
+		else {
+			dom.setAttribute(key, '');
+		}
+	},
 	setDomProps(node: IEl, key: string, value: any, prevVal?: any) {
 		const dom = node.dom as HTMLElement;
 		const signal = node.owner?.abortCon.signal;
@@ -322,10 +359,10 @@ export const nodeOpr = {
     return newNode;
   },
   tagKey(el: IEl) {
-    return `${el.$type}.${el.props.key}`;
+    return `${el.$type}.${el.props.key}.${el.props.ref || ''}`;
   },
   isEq(a: IEl, b: IEl) {
-    return a.props.key === b.props.key && a.$type === b.$type;
+    return this.tagKey(a) === this.tagKey(b);
   },
   diffChildren(prev: IEl, curr: IEl) {
 		const patcher = new PatchBag();
