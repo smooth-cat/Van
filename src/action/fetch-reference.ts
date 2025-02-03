@@ -1,25 +1,15 @@
 import { Location, Position, Uri, commands, TextDocument, workspace, Range, LocationLink, DocumentSymbol } from 'vscode';
-import { fromPos, getSymbolNestStruct } from '../methods';
+import { fromPos, getSymbolKey, openDocument, retryGetSymbols } from '../methods';
 import { exchange, sortBy } from '../../shared/utils';
+import { fetchSymbol } from './fetch-symbol';
 
 export async function fetchReference(pos: Position, uri: Uri) {
   pos = fromPos(pos);
   uri = Uri.from(uri);
 
-	// TODO: 考虑需要通过 IncomingCalls 获取函数引用的上下文来提供更多信息吗
-	// commands.executeCommand('vscode.prepareCallHierarchy', uri, pos).then((v) => {
-	// 	(v as CallHierarchyItem[]).forEach((it: CallHierarchyItem) => {
-	// 		commands.executeCommand('vscode.provideIncomingCalls', it).then((provideIncomingCalls) => {
-	// 			console.log({ provideIncomingCalls });
-	// 		})
-	// 		commands.executeCommand('vscode.provideOutgoingCalls', it).then((provideOutgoingCalls) => {
-	// 			console.log({ provideOutgoingCalls });
-	// 		})
-	// 	});
-	// 	console.log('prepareCallHierarchy', v)
-	// })
-
   try {
+		
+		
     const p = Promise.all([
       commands.executeCommand('vscode.executeDefinitionProvider', uri, pos),
       commands.executeCommand('vscode.executeReferenceProvider', uri, pos)
@@ -28,7 +18,7 @@ export async function fetchReference(pos: Position, uri: Uri) {
     const [definition, locations] = (await p) as [(Location | LocationLink)[], Location[]];
     console.log('当前选中标识符引用', locations);
     console.log('当前选中标识符definition', definition);
-
+		
     const sortEntry = sortBy(
       locations,
       loc => loc.uri.path,
@@ -36,13 +26,15 @@ export async function fetchReference(pos: Position, uri: Uri) {
     );
 
     const refPromises = sortEntry.map(([uri]) => {
-      return workspace.openTextDocument(uri);
+      return openDocument(uri);
     });
 
     const promises = [...refPromises, handleDefine(definition) as any];
-
+		console.time();
+		Promise.all(refPromises).then(() => {
+			console.timeEnd();
+		})
     const res = await Promise.all(promises);
-
     const define = res[res.length - 1];
 
 		let defineI: number|undefined =  undefined;
@@ -66,6 +58,7 @@ export async function fetchReference(pos: Position, uri: Uri) {
       uriItem = relative(uriItem);
 			uriItem['active'] = uriActive;
 			uriItem['expand'] = true;
+			uriItem['showMore'] = locs.length <= 25;
       return [uriItem, handledLocs] as const;
     });
 
@@ -81,7 +74,7 @@ export async function fetchReference(pos: Position, uri: Uri) {
 				exchange(fileRefs, 1, defineI!);
 			}
 		}
-
+		
     return {
       fileRefs,
       define,
@@ -112,17 +105,14 @@ const handleDefine = async (dif: (Location | LocationLink)[]) => {
 
     loc = new Location(first.targetUri, range);
   }
-  const docP = workspace.openTextDocument(loc.uri);
+  const docP = openDocument(loc.uri);
 
-	const symbolsP = (commands.executeCommand<DocumentSymbol[]>(
-		'vscode.executeDocumentSymbolProvider',
-		loc.uri,
-	));
+	const symbolsP = fetchSymbol(loc.uri);
 
-	const [doc, docSymbols] = await Promise.all([docP, symbolsP]);
+	const [doc, { symbols: docSymbols }] = await Promise.all([docP, symbolsP] as const);
 
-	const nestStruct = getSymbolNestStruct(docSymbols, loc.range.start);
-	console.log({ nestStruct, docSymbols });
+	const symbolKey = getSymbolKey(docSymbols, loc.range.start);
+	console.log({ symbolKey, docSymbols });
   const uri = relative(loc.uri);
 
   let rawRange = first instanceof Location ? first.range : first.targetRange;
@@ -139,7 +129,7 @@ const handleDefine = async (dif: (Location | LocationLink)[]) => {
     uri,
     ...getText(doc, loc.range),
     declaration,
-		nestStruct,
+		symbolKey,
   };
 };
 

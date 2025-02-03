@@ -64,7 +64,6 @@ export const LabelFilter: FC<Data, Props> = (data, props) => {
   });
 
   const labelZoneRef = (dom: HTMLElement) => {
-    console.log('ref已被执行');
     resizeObs.observe(dom);
   };
 

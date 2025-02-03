@@ -1,5 +1,6 @@
 import { ExtPromise } from "../promise";
 import { MsgType } from "../var";
+import { timestamp } from "./event";
 
 type Func = (msg: any) => any;
 
@@ -49,6 +50,18 @@ export class Message {
   request = <T = any>(type: string, data: any) => {
     const promise = new ExtPromise<ResDt<T>>();
 		this.reqId++;
+		if(ENV === 'dev') {
+			const start = timestamp();
+			promise.then((res) => {
+				const duration = timestamp() - start;
+				console.log('requestTime', {
+					duration,
+					type,
+					query: data,
+					res,
+				});
+			})
+		}
     this.emit(MsgType.Request, { reqType: type, reqData: data, reqId: this.reqId });
     this.idToPromise.set(this.reqId, promise as any);
     return promise;

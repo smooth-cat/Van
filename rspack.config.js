@@ -97,5 +97,5 @@ module.exports = {
       // },
     ],
   },
-	watch: true,
+	watch: process.env.ENV === 'dev',
 };

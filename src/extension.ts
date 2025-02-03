@@ -5,6 +5,7 @@ import { MsgType, ReqType } from '../shared/var';
 import { emitSelectOrCursorChange, handleCommandMove } from './event-pre-process/select';
 import { debounce } from '../shared/utils';
 import { GuideViewProvider } from './provider';
+import { onDocChanged } from './methods';
 
 const { window, workspace } = vscode;
 
@@ -19,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// 切换当前编辑文件
 		window.onDidChangeActiveTextEditor(event => {
 			const { uri } = event?.document || window.activeTextEditor?.document || {};
-			if(uri) {
+			if(uri?.scheme === 'file') {
 				provider.msg.emit(MsgType.DocSwitch, uri);
 			}
 		}),
@@ -27,7 +28,8 @@ export function activate(context: vscode.ExtensionContext) {
 		window.onDidChangeTextEditorSelection((e) => emitSelectOrCursorChange(e, provider.msg)),
 		// 文件内容改变
 		workspace.onDidChangeTextDocument(debounce((e) => {
-			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri })
+			onDocChanged(e.document);
+			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri });
 		})),
 		// 删除项目文件
 		workspace.onDidDeleteFiles((e) => {
@@ -48,8 +50,13 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('code-guide.backward', async() => {
 			const res = await vscode.commands.executeCommand('workbench.action.navigateBack')
 			handleCommandMove(provider.msg);
+		}),
+		vscode.commands.registerCommand('code-guide.lockMode', () => {
+			provider.msg.emit(MsgType.LockModeChange, {});
 		})
 	);
+
+
 
 	function onResolved(self: GuideViewProvider) {
 		self.msg.onReq(ReqType.Command, async(res, data: any[]) => {
@@ -69,7 +76,6 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 
 		self.msg.onReq(ReqType.Eval, async(res, data: string) => {
-			console.log('接到eval指令', data);
 			try {
 				const result = eval(data);
 				if(result instanceof Promise) {
@@ -85,7 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 
 		self.msg.onReq('', (res, data) => {
-
+			
 		})
 	}
 }

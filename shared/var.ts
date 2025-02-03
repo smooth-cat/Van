@@ -5,6 +5,7 @@ export type Uri = RawUri & {
   relativePath: string;
   active: boolean;
   expand: boolean;
+	showMore: boolean;
   scroll?: { id: number };
 };
 
@@ -17,7 +18,8 @@ export enum MsgType {
   RenameFile = 'RenameFile',
   Request = 'Request',
   Response = 'Response',
-  Reload = 'Reload'
+  Reload = 'Reload',
+  LockModeChange = 'LockModeChange',
 }
 
 export enum ReqType {
@@ -44,7 +46,7 @@ export type Define = Reference & {
   /** 包含声明关键字的字符串 */
   declaration: string;
   /** 定义在文件中的 作用域 嵌套名称 */
-  nestStruct: string[];
+  symbolKey?: string;
 };
 
 export type FileRef = [Uri, Reference[]];
@@ -56,20 +58,35 @@ export type FetchRefRes = {
 };
 
 export type DocNode = Pick<DocumentSymbol, 'name' | 'kind'> & {
-  children: DocNode[];
   location: Loc;
   range: IRange;
-	key: string;
 	selectionRange: IRange;
+	children: DocNode[];
+	key: string;
 	expand: boolean;
-	line?: number;
 	/** 匹配字符串开始位置 */
 	start: number;
 	/** 匹配字符串结束 */
 	end: number;
 	/** 儿子是否匹配 */
 	childMatch: boolean;
+	/** 自己的 key */
+	selfKey: string;
+	_i: number;
 };
+
+export type IFetchSymbolsRes = {
+	hasRepeat: boolean;
+	symbols: DocNode[];
+}
+
+/** 这个类型适用于 src */
+export type SDocNode = Omit<DocNode, 'location' | 'range' | 'selectionRange' | 'children'> & {
+	location: Location,
+	range: Range,
+	selectionRange: Range,
+	children: SDocNode[]
+}
 
 export enum RefreshKind {
   /**
@@ -207,7 +224,7 @@ export const SymbolMap = {
   /**
    * The `Module` symbol kind.
    */
-  [SymbolKind.Module]: ['module', 'rgb(0, 68, 255)'],
+  [SymbolKind.Module]: ['module', 'rgb(68, 118, 255)'],
   /**
    * The `Namespace` symbol kind.
    */
@@ -231,7 +248,7 @@ export const SymbolMap = {
   /**
    * The `Field` symbol kind.
    */
-  [SymbolKind.Field]: ['Field', 'rgb(0, 247, 255)'],
+  [SymbolKind.Field]: ['tag', 'rgb(0, 247, 255)'],
   /**
    * The `Constructor` symbol kind.
    */
@@ -259,7 +276,7 @@ export const SymbolMap = {
   /**
    * The `String` symbol kind.
    */
-  [SymbolKind.String]: ['str', 'rgb(85, 0, 255)'],
+  [SymbolKind.String]: ['str', 'rgb(155, 106, 255)'],
   /**
    * The `Number` symbol kind.
    */

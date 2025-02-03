@@ -7,7 +7,15 @@ export type AsyncState<T> = {
 	loading: boolean,
 }
 
-export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: string, fn: T, updated?: Func) {
+const UseAsyncOption = {
+	updated: undefined as (Func|undefined),
+	showLoadingOnce: false,
+}
+
+type IUseAsyncOpt = Partial<typeof UseAsyncOption>;
+
+export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: string, fn: T, opt: IUseAsyncOpt) {
+	opt = {...UseAsyncOption, ...opt};
 	const data = getData();
 	let state: any = {
 		value: undefined,
@@ -19,8 +27,12 @@ export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: strin
 	state = data[key];
 	
 	let count = 0;
+	let loadShowedOnce = false;
 	const run = (...args: Parameters<T>) => {
-		state.loading = true;
+		if(!(opt.showLoadingOnce && loadShowedOnce)) {
+			state.loading = true;
+		}
+		loadShowedOnce = true;
 		count++;
 		const memoCount = count;
 		const ctx = { 
@@ -28,17 +40,17 @@ export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: strin
 		} as any;
     return fn.apply(ctx, args).then(
 			value => {
+				state.loading = false;
 				// 如果 count 不同说明这个异步结果失效了
 				if(count !== memoCount) return;
         state.value = value;
-        state.loading = false;
-				updated?.call(ctx);
+				opt.updated?.call(ctx);
       },
       error => {
+				state.loading = false;
 				if(count !== memoCount) return;
         state.error = error;
-        state.loading = false;
-				updated?.call(ctx);
+				opt.updated?.call(ctx);
       }
     );
   };
@@ -47,6 +59,7 @@ export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: strin
 		state.value = undefined;
 		state.error = undefined;
 		state.loading = false;
+		loadShowedOnce = false;
 	}
 
 	return [run as T, reset];

@@ -1,3 +1,4 @@
+import { Input } from '../components/input';
 import { iClose, iCloseSolid, iDbExp } from '../icon';
 import { Icon } from '../icon/fc';
 import { el, fn, text } from '../runtime/el';
@@ -29,10 +30,7 @@ export const OutlineSearch: FC<Data, Props> = (data, props) => {
 		const { value, updateSearch } = props;
 		return [
 			el('div', { class: 'outlineSearch' }, [
-				el('div', { class: 'closeInput' }, [
-					el('input', { class: 'outlineInput', placeholder: '搜索 @开头大小写敏感', value, oninput: (e) => updateSearch(e.target.value)  }),
-					fn(Icon, { style: `opacity: ${value ? '1' : '0'}`, class: 'close', i: iCloseSolid, size: 18, onclick: clear })
-				]),
+				fn(Input, { placeholder: '搜索 @开头大小写敏感', value, onChange: updateSearch }),
 				el('div', { class: `tools` }, [
 						fn(Icon, { class: 'expand',key: 'expand', i: iDbExp, size: 12, onclick: shrink }),
 						fn(Icon, { class: 'shrink',key: 'shrink', i: iDbExp, size: 12, onclick: expand }),

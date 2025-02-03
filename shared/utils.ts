@@ -29,12 +29,14 @@ export function dfs<K extends string , T extends (Record<any, any> & { [k in K]:
     }
     // 上浮
     complete: while (1) {
-      completeWork(current, stack);
       stack.pop()!;
 
       const currentI = current.__$_i;
       // @ts-ignore
       current.__$_i = undefined;
+			
+			completeWork(current, stack);
+
       if (current === root) {
         return;
       }
@@ -137,3 +139,16 @@ export const exchange = (arr: any[], i: number, j: number) => {
   arr[i] = arr[j];
   arr[j] = temp;
 };
+
+export function glob(globStr: string) {
+  // 转换 glob 为正则表达式
+  const regexString = globStr
+      .replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\\$1')  // 转义特殊字符
+      .replace(/\\\*/g, '.*')  // '*' 匹配任意字符
+      .replace(/\\\?/g, '.')   // '?' 匹配单个字符
+      .replace(/^\\\//, '^\/') // 从头匹配 '/'
+      .replace(/\\\//g, '\/'); // 匹配 '/'
+  
+  const regex = new RegExp('^' + regexString + '$');
+  return regex;
+}

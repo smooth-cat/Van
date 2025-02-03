@@ -1,29 +1,34 @@
 import { commands, DocumentSymbol, TextDocument, TextEditor, Uri, window, workspace, Range, Position } from 'vscode';
 import { dfs, pick } from '../../shared/utils';
-import { SymbolKind } from '../../shared/var';
+import { SDocNode, SymbolKind } from '../../shared/var';
+import { openDocument, retryGetSymbols } from '../methods';
 
 export async function fetchSymbol(uri?: Uri) {
-  uri = window.activeTextEditor?.document?.uri;
+  uri = uri ?? window.activeTextEditor?.document?.uri;
   if (!uri) {
     console.log('当前无打开的文件');
-    return;
+    return { hasRepeat: false, symbols: [] as SDocNode[]};
   }
 
   uri = Uri.from(uri);
-
+	console.log('看看uri',uri);
+	
   try {
-    const docSymbolsP = commands.executeCommand<DocumentSymbol[]>('vscode.executeDocumentSymbolProvider', uri);
-    const docP = workspace.openTextDocument(uri);
+    // const docSymbolsP = commands.executeCommand<DocumentSymbol[]>('vscode.executeDocumentSymbolProvider', uri);
+    const docSymbolsP = retryGetSymbols(uri);
+    const docP = openDocument(uri);
 
-    const [doc, docSymbols] = await Promise.all([docP, docSymbolsP]);
+    const [doc, { hasRepeat, symbols }] = await Promise.all([docP, docSymbolsP]);
     const root = {
-      children: docSymbols
-    } as DocumentSymbol;
+			key: uri.fsPath,
+			selfKey: uri.fsPath,
+      children: symbols,
+    } as any as SDocNode;
 
-    let fixHandle;
+    let kindFix;
     for (const { test, handle } of fixNode) {
       if (uri.path.match(test)) {
-        fixHandle = handle;
+        kindFix = handle;
         break;
       }
     }
@@ -31,60 +36,67 @@ export async function fetchSymbol(uri?: Uri) {
     dfs(
       root,
       (item, stack) => {
-				// 重名
-				if(item.children?.length) {
-					const list = item.children;
-					const repeat = new Map<string, DocumentSymbol>();
-					list.forEach((it, i) => {
-						const record = repeat.get(it.name);
-						if(record) {
-							it['line'] = it.range.start.line + 1;
-							if(!record['__handled']) {
-								record['line'] = record.range.start.line + 1;
-								record['__handled'] = true;
-							}
-						} else {
-							repeat.set(it.name, it);
-						}
-					});
-					list.sort((a, b) => a.range.start.line - b.range.start.line)
-				}
-        const parent = stack[stack.length - 1];
-        const newNode = pick(item, ['name', 'location' as any, 'kind', 'line', 'selectionRange']);
-        if (parent) {
-          const { line, character } = item['location'].range.start as Position;
-          const selfKey = `${item.name}.${item.kind}.${line}.${character}`;
-          const parentKey = parent['newNode']?.key;
-          const key = parentKey ? parentKey + '-' + selfKey : selfKey;
-          newNode.key = key;
-					// newNode.expand = true;
-        }
-        newNode.range = item?.['location']?.range;
-        fixHandle?.(newNode, doc, parent);
-        // TODO: var 类型在 ts 包含了 type、箭头函数
+				// if(item.children?.length) {
+				// 	item.children.sort((a, b) => a.range.start.line - b.range.start.line)
+				// }
+
+				const parent = stack.at(-1);
+        const newNode = pick(item, ['key', 'selfKey', 'name', 'location' as any, 'kind', 'line', 'selectionRange']);
+				newNode.range = item?.['location']?.range;
+				// TODO: 子类型修正依赖于 旧 的 parent 需要注意
+				kindFix?.(newNode, doc, parent);
         item['newNode'] = newNode;
+
+				if(!parent) return;
+				const { repeat = new Map<string, DocumentSymbol>(), key: pSelfKey } = parent['newNode'] as any;
+				const selfKey = `${newNode.name}.${newNode.kind}`;
+				const record = repeat.get(selfKey);
+				
+				if(record) {
+					// 修正第一个记录项
+					if(record['_i'] === 0) {
+						record['_i']++;
+						const rSelfKey = `${selfKey}.${record['_i']}`;
+						record.key = `${pSelfKey}-${rSelfKey}`;
+						record.selfKey = rSelfKey;
+					}
+					newNode['_i'] = record['_i'] + 1;
+					repeat.set(selfKey, newNode);
+				} 
+				else {
+					newNode['_i'] = 0;
+					repeat.set(selfKey, newNode);
+				}
+				// 不一定对，如果后续重名会修改末尾的 i
+				const firstSelfKey = `${selfKey}.${newNode['_i']}`;
+				newNode.key = `${pSelfKey}-${firstSelfKey}`;
+				newNode.selfKey = firstSelfKey;
+				parent['newNode'].repeat = repeat;
       },
       (item, stack) => {
-        const parent = stack[stack.length - 2];
-        if (parent) {
-          const newNode = parent['newNode'];
-          const { children = [] } = newNode;
-          children.push(item['newNode']);
-          item['newNode'] = undefined;
-          newNode.children = children;
-        }
+				const newNode = item['newNode'];
+        const parent = stack.at(-1);
+
+				if(!parent) return;
+        
+				const newNodeP = parent['newNode'];
+				const { children = [] } = newNodeP;
+				children.push(newNode);
+				item['newNode'] = undefined;
+				newNodeP.children = children;
       },
       'children'
     );
 
     const res = root['newNode'].children;
     console.log('当前活动文件symbols', res);
-    return res;
+    return { hasRepeat, symbols: res as SDocNode[]};
   } catch (error) {
     console.log('获取symbols错误', error);
+		return { hasRepeat: false, symbols: [] as SDocNode[]};
   }
 }
-const fixNode = [
+export const fixNode = [
   {
     test: /\.(js|ts|tsx)$/,
     handle(node: DocumentSymbol, doc: TextDocument, parent?: DocumentSymbol) {

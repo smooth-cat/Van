@@ -1,0 +1,24 @@
+.closeInput {
+	background-color: #1f1f1f;
+	border-radius: 4px;
+	padding: 0 8px;
+	height: 35px;
+	display: flex;
+	align-items: center;
+	flex: 1;
+	.outlineInput {
+		flex: 1;
+		background-color: #1f1f1f;
+		border: none;
+		caret-color: var(--cg-color);
+		color: var(--cg-color);
+		&:focus,&:active {
+			border: none;
+			outline: none;
+		}
+	}
+	.close {
+		color: var(--cg-color-fade);
+		flex: none;
+	}
+}

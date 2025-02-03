@@ -5,6 +5,7 @@ export type Props = {
 	expand: boolean;
 	els: IEl[];
 	class: string;
+	direction: 'col' | 'row'
 }
 type Data = {
 	
@@ -14,10 +15,13 @@ export const Expand: FC<Data, Props> = (data, props) => {
 
 
 	return () => {
-		const { expand, els } = props;
+		const { expand, els, direction='col' } = props;
+
+		const expandName = `expanded-${direction}`;
+		const contractedName = `contracted-${direction}`;
 
 		return [
-			el('div', { style: props.style || '', class: `expand-wrap ${props.class || ''} ${expand ? 'expanded' : ''}` }, [
+			el('div', { style: props.style || '', class: `expand-wrap ${props.class || ''} ${expand ? expandName : contractedName}` }, [
 				el('div', { class: `expand-inner ${expand ? 'expanded' : ''}` }, els)
 			])
 		]

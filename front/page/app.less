@@ -8,6 +8,7 @@
 	--cg-color-fade: rgba(179, 179, 179, 0.66);
 	--cg-color-highlight: #00b9a2;
 	--cg-bg-highlight: #2d9b8e;
+	--cg-bg-op: #0d111789;
 	--cg-bg: #0d1117;
 	--cg-bg-fade: #16191c;
 	--cg-bg-fade-op: #16191c89;
@@ -67,21 +68,23 @@ body * {
   /*Chrome, Safari, Edge*/
   display: none;
 }
-
+:root {
+	--made-icon-size: 15px;
+}
 .plus-icon {
 	position: relative;
 	padding: 0px;
 	border: 1px solid var(--cg-color-fade);
-	width: 13px;
-	height: 13px;
+	width: var(--made-icon-size);
+	height: var(--made-icon-size);
 	&::after {
 		content: '+';
 		position: absolute;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, calc(-50% - 1px));
-		font-size: 13px;
-		line-height: 13px;
+		font-size: var(--made-icon-size);
+		line-height: var(--made-icon-size);
 		border: 0;
 		margin: 0;
 		padding: 0;
@@ -91,16 +94,16 @@ body * {
 	position: relative;
 	padding: 0px;
 	border: 1px solid var(--cg-color-fade);
-	width: 13px;
-	height: 13px;
+	width: var(--made-icon-size);
+	height: var(--made-icon-size);
 	&::after {
 		content: '-';
 		position: absolute;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, calc(-50% - 1px));
-		font-size: 13px;
-		line-height: 13px;
+		font-size: var(--made-icon-size);
+		line-height: var(--made-icon-size);
 		border: 0;
 		margin: 0;
 		padding: 0;

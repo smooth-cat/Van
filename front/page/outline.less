@@ -68,6 +68,7 @@
 	.labelZone.placeholder::after {
 		content: '请选择可见类型';
 		color: var(--cg-color-fade);
+		height: 19px;
 	}
 
 	&.visible {
@@ -150,30 +151,30 @@
 	width: 100%;
 	margin-top: 8px;
 
-	.closeInput {
-		background-color: #1f1f1f;
-		border-radius: 4px;
-		padding: 0 8px;
-		height: 35px;
-		display: flex;
-		align-items: center;
-		flex: 1;
-		.outlineInput {
-			flex: 1;
-			background-color: #1f1f1f;
-			border: none;
-			caret-color: var(--cg-color);
-			color: var(--cg-color);
-			&:focus,&:active {
-				border: none;
-				outline: none;
-			}
-		}
-		.close {
-			color: var(--cg-color-fade);
-			flex: none;
-		}
-	}
+	// .closeInput {
+	// 	background-color: #1f1f1f;
+	// 	border-radius: 4px;
+	// 	padding: 0 8px;
+	// 	height: 35px;
+	// 	display: flex;
+	// 	align-items: center;
+	// 	flex: 1;
+	// 	.outlineInput {
+	// 		flex: 1;
+	// 		background-color: #1f1f1f;
+	// 		border: none;
+	// 		caret-color: var(--cg-color);
+	// 		color: var(--cg-color);
+	// 		&:focus,&:active {
+	// 			border: none;
+	// 			outline: none;
+	// 		}
+	// 	}
+	// 	.close {
+	// 		color: var(--cg-color-fade);
+	// 		flex: none;
+	// 	}
+	// }
 	.tools {
 		background-color: #1f1f1f;
 		border-radius: 4px;
@@ -201,9 +202,21 @@
 		padding: 0;
 		margin: 0;
 	}
+	margin-bottom: 8px;
 }
 
 .outline > .tree {
 	flex: 1;
 	overflow-y: auto;
+	& > .children > *:nth-child(-n+3) {
+		margin-top: 0 !important;
+	}
+}
+.hasRepeat {
+	border-radius: 4px;
+	color: #ffc115;
+	box-shadow: inset 0px 0px 5px 1px #ffc115;
+	padding: 4px 8px;
+	margin-bottom: 8px;
+	cursor: pointer;
 }
