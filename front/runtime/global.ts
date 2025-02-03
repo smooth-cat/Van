@@ -33,6 +33,7 @@ export function setVar(k:Key, v: any) {
 }
 
 export const getData = () => Var.curInitFC?.data as any;
+export const getProps = () => Var.curInitFC?.props as any;
 
 export const __Internal_Event__ = new BaseEvent();
 
