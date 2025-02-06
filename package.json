@@ -2,7 +2,7 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "a navigator for fast read code",
-	"version": "0.0.3",
+	"version": "1.0.0",
 	"publisher": "smooth-cat",
 	"private": true,
 	"license": "MIT",
