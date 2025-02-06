@@ -11,7 +11,7 @@
 	"icon": "van.png",
 	"repository": {
 		"type": "git",
-		"url": ""
+		"url": "https://github.com/smooth-cat/Nav"
 	},
 	"engines": {
 		"vscode": "^1.50.0"
