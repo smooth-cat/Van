@@ -30,6 +30,17 @@ module.exports = {
   },
 	optimization: {
     minimize: process.env.ENV !== 'dev',
+		minimizer: [
+			new rspack.SwcJsMinimizerRspackPlugin({
+				minimizerOptions: {
+					compress: {
+						drop_console: true,
+						drop_debugger: true,
+					},
+				},
+			}),
+			new rspack.LightningCssMinimizerRspackPlugin()
+		]
   },
 	experiments: {
     css: true,
@@ -38,7 +49,7 @@ module.exports = {
     path: path.resolve(__dirname, './dist'),
 		filename: 'index.js',
 		library: {
-			name: 'CodeGuide',
+			name: 'Van',
       type: 'umd',
     },
   },
@@ -95,6 +106,14 @@ module.exports = {
       //   use: [rspack.CssExtractRspackPlugin.loader, 'css-loader'],
       //   type: 'javascript/auto',
       // },
+			{
+				test: /\.(png|jpg|jpeg|gif|svg)$/,
+				type: 'asset/resource',
+				// 可选：自定义输出文件名和路径
+				generator: {
+					filename: '[hash][ext][query]' // 图片输出到 dist/assets/images 目录
+				}
+			}
     ],
   },
 	watch: process.env.ENV === 'dev',

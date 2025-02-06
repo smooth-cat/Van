@@ -64,7 +64,7 @@ export async function retryGetSymbols(uri: Uri, start = timestamp(), i = 0) {
 		return unRepeatSymbols(docSymbols);
 	}
 
-	if(now - start > 1500) {
+	if(now - start > 3000) {
 		console.log('leave with timeout', i);
 		return {
 			hasRepeat: false,
@@ -108,7 +108,7 @@ export async function openDocument(uri: Uri) {
 	return doc;
 }
 
-export function onDocChanged(newDoc: TextDocument) {
+export function updateDocCache(newDoc: TextDocument) {
 	const { path } = newDoc.uri;
 	// 不管有没有先缓存
 	// if(!docCache.has(path)) return;

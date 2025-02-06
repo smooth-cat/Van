@@ -4,19 +4,19 @@ import { Message } from '../shared/message/index';
 import { MsgType, ReqType } from '../shared/var';
 import { emitSelectOrCursorChange, handleCommandMove } from './event-pre-process/select';
 import { debounce } from '../shared/utils';
-import { GuideViewProvider } from './provider';
-import { onDocChanged } from './methods';
+import { NavViewProvider } from './provider';
+import { updateDocCache } from './methods';
 
 const { window, workspace } = vscode;
 
 
 export function activate(context: vscode.ExtensionContext) {
 
-	const provider = new GuideViewProvider(context.extensionUri, onResolved);
+	const provider = new NavViewProvider(context.extensionUri, onResolved);
 
 	context.subscriptions.push(
 		// viewType 视图的唯一id。这应该与package.json中views贡献的id匹配
-		window.registerWebviewViewProvider('code-guide', provider),
+		window.registerWebviewViewProvider('Van', provider),
 		// 切换当前编辑文件
 		window.onDidChangeActiveTextEditor(event => {
 			const { uri } = event?.document || window.activeTextEditor?.document || {};
@@ -28,13 +28,18 @@ export function activate(context: vscode.ExtensionContext) {
 		window.onDidChangeTextEditorSelection((e) => emitSelectOrCursorChange(e, provider.msg)),
 		// 文件内容改变
 		workspace.onDidChangeTextDocument(debounce((e) => {
-			onDocChanged(e.document);
+			updateDocCache(e.document);
+			action.delSymbolsCache(e.document);
 			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri });
 		})),
 		// 删除项目文件
 		workspace.onDidDeleteFiles((e) => {
 			provider.msg.emit(MsgType.DeleteFile, { uris: e.files });
 		}),
+		// 新建文件(删除后撤销)
+		workspace.onDidCreateFiles(debounce((e) => {
+			provider.msg.emit(MsgType.CreateFile, { uris: e.files });
+		})),
 		// 重命名项目文件
 		workspace.onDidRenameFiles((e) => {
 			provider.msg.emit(MsgType.RenameFile, { uris: e.files });
@@ -43,22 +48,22 @@ export function activate(context: vscode.ExtensionContext) {
 		 * 注册 cmd shift p 命令，与 package.contributes.commands 联动
 		 * provider 通过 postMessage 和 webview
 		 */
-		vscode.commands.registerCommand('code-guide.forward', async() => {
+		vscode.commands.registerCommand('Van.forward', async() => {
 			const res = await vscode.commands.executeCommand('workbench.action.navigateForward')
 			handleCommandMove(provider.msg);
 		}),
-		vscode.commands.registerCommand('code-guide.backward', async() => {
+		vscode.commands.registerCommand('Van.backward', async() => {
 			const res = await vscode.commands.executeCommand('workbench.action.navigateBack')
 			handleCommandMove(provider.msg);
 		}),
-		vscode.commands.registerCommand('code-guide.lockMode', () => {
+		vscode.commands.registerCommand('Van.lockMode', () => {
 			provider.msg.emit(MsgType.LockModeChange, {});
 		})
 	);
 
 
 
-	function onResolved(self: GuideViewProvider) {
+	function onResolved(self: NavViewProvider) {
 		self.msg.onReq(ReqType.Command, async(res, data: any[]) => {
 			const [name, ...args] = data;
 			try {

@@ -1,4 +1,4 @@
-import { Define, FileRef, MsgType, Reference, Uri } from '../../shared/var';
+import { Define, FileRef, MsgType, Reference, ReqType, Uri } from '../../shared/var';
 import { el, fn, text } from '../runtime/el';
 import { FC } from '../runtime/type';
 import './detail.less';
@@ -14,9 +14,10 @@ import { Input } from '../components/input';
 import { Expand } from '../components/expand';
 import { cNames } from '../runtime/util';
 import { useVerify } from '../hook/use-verify';
-import { glob } from '../../shared/utils';
-import { minimatch, Minimatch } from 'minimatch';
+import { Minimatch } from 'minimatch';
 import { useDebounceValue } from '../hook/use-debounce-value';
+import { getRelativePath } from '../../shared/utils';
+import { useComputed } from '../runtime/use-computed';
 
 export type IActive = {
   uri?: Uri;
@@ -128,7 +129,67 @@ export const Detail: FC<Data, Props> = (data, props) => {
 		data.ignoreRefKey.clear();
 	}
 
+	function delRefFile({ uris }: { uris: Uri[] }) {
+    const { fileRefs, active } = props;
+		if(!active.index) return;
+    let [activeI = -1] = active.index;
+    let delCount = 0;
+    const deletion = new Set(uris.map(u => u.path));
+    for (let i = fileRefs.length - 1; i >= 0; i--) {
+      const [uri] = fileRefs[i];
+      if (!deletion.has(uri.path)) continue;
+      fileRefs.splice(i, 1);
+      if (i === activeI) {
+        activeI = -1;
+      }
+      if (i < activeI) {
+        delCount++;
+      }
+    }
+    if (activeI !== -1) {
+      activeI -= delCount;
+    }
+		active.index = [activeI, active.index[1]];
+  }
+
+	async function renameRefFile({
+    uris
+  }: {
+    uris: {
+      oldUri: Uri;
+      newUri: Uri;
+    }[];
+  }) {
+		// 为了能够计算出 relativePath
+		// TODO: symbolKey 问题
+		const result = await msg.request<string>(ReqType.Command, ['fetchWorkspacePath']);
+		if(result.error) return;
+		const spacePath = result.data;
+		const { fileRefs, define } = props;
+		const changeMap = new Map(uris.map(it => [it.oldUri.path, it.newUri.path]));
+		fileRefs.forEach(([uri]) => {
+			if(!changeMap.has(uri.path)) return;
+			const fullPath = changeMap.get(uri.path);
+			const relativePath = getRelativePath(fullPath, spacePath);
+			// @ts-ignore
+			uri.path = fullPath;
+			uri.relativePath = relativePath;
+		});
+
+		// TODO:要修正 define.SymbolKey
+		if(!changeMap.has(define.uri.path)) return;
+		const fullPath = changeMap.get(define.uri.path);
+		const relativePath = getRelativePath(fullPath, spacePath);
+		const lastKey = define.symbolKey.slice(define.uri.path.length);
+		define.symbolKey = fullPath + lastKey;
+		// @ts-ignore
+		define.uri.path = fullPath;
+		define.uri.relativePath = relativePath;
+	}
+
 	const dispose1 = msg.on(MsgType.LockModeChange, toggleLock);
+	const dispose2 = msg.on(MsgType.DeleteFile, delRefFile);
+	const dispose3 = msg.on(MsgType.RenameFile, renameRefFile);
 
 	const ignoreReg = computed(() => {
 		let input = data.dSearch.trim();
@@ -140,11 +201,11 @@ export const Detail: FC<Data, Props> = (data, props) => {
 		return new Minimatch(input, { partial: true, dot: true })
 	});
 
-	const filteredRefs = computed(() => props.fileRefs.filter(it => {
+	const filteredRefs = useComputed(() => props.fileRefs.filter(it => {
 		const matchGlob = ignoreReg.value.match(it[0].relativePath);
 		const matchIgnorePaths = data.ignorePaths.has(it[0].relativePath);
 		return !matchGlob && !matchIgnorePaths;
-	}));
+	}), ['fileRefs']);
 
 	window.addEventListener('keyup', onKeyDown)
 	
@@ -154,10 +215,12 @@ export const Detail: FC<Data, Props> = (data, props) => {
     handle.stop();
 		window.removeEventListener('keyup', onKeyDown);
 		dispose1();
+		dispose2();
+		dispose3();
   });
 
   return () => {
-    const { fileRefs, define, close } = props;
+    const { define, close } = props;
 
     const fileName = define.uri.relativePath.split('/').pop() || '';
 
@@ -189,64 +252,61 @@ export const Detail: FC<Data, Props> = (data, props) => {
                     els: [
                       fn(Icon, {
                         i: iUnLock,
-                        class: cNames({ active: verify(LockType.UnLock) }),
                         size: 15,
                         onclick: () => update(LockType.UnLock)
                       })
                     ],
                     tip: '无锁模式(F12)',
                     type: 'bottom',
-										class: 'iUnlock',
+										class: cNames('iUnlock', { active: verify(LockType.UnLock) }),
                   }),
                   fn(Tooltip, {
                     els: [
                       fn(Icon, {
                         i: iHalfLock,
-                        class: cNames({ active: verify(LockType.HalfLock) }),
                         size: 18,
                         onclick: () => update(LockType.HalfLock)
                       })
                     ],
                     tip: '半锁模式(F12)',
-                    type: 'bottom'
+                    type: 'bottom',
+										class: cNames({ active: verify(LockType.HalfLock) }),
                   }),
                   fn(Tooltip, {
                     els: [
                       fn(Icon, {
                         i: iLock,
-                        class: cNames({ active: verify(LockType.Lock) }),
                         size: 18,
                         onclick: () => update(LockType.Lock)
                       })
                     ],
                     tip: '锁模式(F12)',
-                    type: 'bottom'
+                    type: 'bottom',
+										class: cNames({ active: verify(LockType.Lock) }),
                   }),
                   fn(Tooltip, {
                     els: [
                       fn(Icon, {
                         i: iRubber,
                         size: 19,
-												class: cNames({ active: data.clearable }),
 												onclick: toggleEnableClear,
                       })
                     ],
                     tip: data.clearable ? '排除工具(Esc)' : '排除工具',
                     type: 'bottom',
-										class: 'clearable-btn'
+										class: cNames('clearable-btn', { active: data.clearable }), 
                   }),
 									(data.ignorePaths.size > 0 || data.ignoreRefKey.size > 0) && fn(Tooltip, {
                     els: [
                       fn(Icon, {
                         i: iCancel,
-                        class: 'active',
                         size: 14,
                         onclick: cancelClear,
                       })
                     ],
                     tip: '恢复删除项',
                     type: 'bottom',
-										class: 'cancel-btn'
+										class: 'active cancel-btn'
                   }),
 									fn(Tooltip, {
                     els: [el('div', { class: 'plus-icon', onclick: expandFolder })],
@@ -261,7 +321,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
                 ]
               })
             ]),
-            el('div', { title: '关闭', class: 'title-name' }, [text(define.name)])
+            el('div', { title: define.name, class: 'title-name' }, [text(define.name)])
           ]),
           fn(Input, { value: data.search, onChange, placeholder: '输入要忽略文件，glob 语法' })
         ]),
@@ -295,7 +355,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
             },
             filteredRefs.value
               .slice(data.pos.start, data.pos.end)
-              .map(([uri, refs]) => fn(DetailFile, { clearable: data.clearable, ignorePaths: data.ignorePaths, ignoreRefKey: data.ignoreRefKey , key: uri.path, uri, refs }))
+              .map(([uri, refs]) => fn(DetailFile, { define, clearable: data.clearable, ignorePaths: data.ignorePaths, ignoreRefKey: data.ignoreRefKey , key: uri.path, uri, refs }))
           )
         ])
       ])

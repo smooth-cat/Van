@@ -1,0 +1,39 @@
+.loading-fc {
+	position: relative;
+	.loading-background {
+		width: 100%;
+	}
+}
+.circle-group-wrapper {
+	width: 40px;
+	position: absolute;
+	left: 67%;
+	top: 10.5%;
+	overflow: hidden;
+}
+.circle-group {
+	display: flex;
+	animation: move-dots 2s steps(4) infinite;
+}
+@keyframes move-dots{
+	0% {
+		transform: translateX(-32px);
+	}
+	100% {
+		transform: translateX(16px);
+	}
+}	
+
+.circle {
+	flex: none;
+  width: 100px; /* 圆点的宽度 */
+  height: 100px; /* 圆点的高度 */
+  border-radius: 50%; /* 使其成为圆形 */
+  background: radial-gradient(circle,#47fff3 5%, #47fff388 28%, transparent 40%);
+	transform: scale(0.1);
+	transform-origin: 0 0;
+}
+
+.circle:nth-child(n+2) {
+	margin-left: -88px;
+}

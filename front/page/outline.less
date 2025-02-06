@@ -208,8 +208,17 @@
 .outline > .tree {
 	flex: 1;
 	overflow-y: auto;
+	position: relative;
 	& > .children > *:nth-child(-n+3) {
 		margin-top: 0 !important;
+	}
+	.loading-img {
+		position: absolute;
+		top: 5%;
+		left: 50%;
+		width: 80%;
+		transform: translateX(-50%);
+		margin: auto;
 	}
 }
 .hasRepeat {

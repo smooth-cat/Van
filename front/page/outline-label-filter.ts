@@ -1,4 +1,3 @@
-import { computed } from '@vue/reactivity';
 import { AllSymbolKinds, SymbolKind, SymbolMap } from '../../shared/var';
 import { el, fn, IEl, text } from '../runtime/el';
 import { FC } from '../runtime/type';

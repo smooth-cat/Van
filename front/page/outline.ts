@@ -14,6 +14,8 @@ import { onUnmount } from '../runtime/life-circle';
 import { Icon } from '../icon/fc';
 import { iWarn } from '../icon';
 import { info, warn } from '../components/toast';
+import Empty from '../icon/nav-empty.png';
+import { Loading } from '../components/loading';
 export type Props = {};
 type Data = {
   tree: AsyncState<DocNode[]>;
@@ -146,9 +148,10 @@ export const Outline: FC<Data, Props> = (data, props) => {
 				]),
         el('div', { class: 'tree hide-scrollbar' }, [
           tree.loading
-            ? text('outline')
-            : tree.value &&
-              el(
+            ? fn(Loading)
+            : !tree.value?.length 
+							? el('img', { class: 'loading-img', src: Empty })
+							: el(
                 'div',
                 { class: 'children', style: 'padding-left: 0px' },
                 filteredTree.value.map(it => fn(Node, { key: it.key, value: it, uri }))

@@ -65,11 +65,10 @@
 				color: var(--cg-color-highlight);
 				font-size: var(--fz-lg);
 				flex: 1;
-				cursor: pointer;
 				overflow: hidden;
 				white-space: nowrap;
 				text-overflow: ellipsis;
-				margin-left: 4px;
+				margin-left: 2px;
 				transform: translateY(-1px);
 			}
 			.previous {
@@ -209,6 +208,15 @@
 				.file-path {
 					font-size: var(--fz-xs);
 				}
+				.define-wrapper {
+					margin-right: 4px;
+				}
+				.define-circle-flag {
+					font-size: var(--fz-xs);
+					line-height: var(--fz-xs);
+					font-weight: 800;
+					color: rgb(255, 123, 0);
+				}
 			}
 			.ref-list {
 				// padding-left: 16px;
@@ -219,16 +227,21 @@
 					.ref-grid {
 						display: grid;
 						grid-template-columns: auto 1fr;
-						&:not(:has(.active-ref:last-child)) {
-							margin-bottom: 8px;
-						}
+						// &:not(:has(.active-ref:last-child)) {
+						// 	margin-bottom: 8px;
+						// }
 						.ref-line {
+							cursor: pointer;
 							font-size: var(--fz-xs);
 							align-self: stretch;
 							display: flex;
 							align-items: center;
 							padding: 6px 0 6px 8px;
 							position: relative;
+							&.define-ref {
+								font-weight: 800;
+								color: rgb(255, 123, 0);
+							}
 							&.active-ref::after {
 								display: block;
 								position: absolute;
@@ -243,6 +256,7 @@
 							}
 						}
 						.ref-lineTextHighlight {
+							cursor: pointer;
 							align-self: stretch;
 							display: flex;
 							align-items: center;
@@ -272,6 +286,7 @@
 				// }
 			}
 			.showMoreBtn {
+				cursor: pointer;
 				padding: 6px 0px 1px;
 				position: absolute;
 				bottom: 1px;
@@ -281,7 +296,7 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background: linear-gradient(to bottom, var(--cg-bg-op) 10%, var(--cg-bg) 20%);
+				background: linear-gradient(to bottom,  var(--cg-bg-op) 30%, var(--cg-bg-fade-op) 70%);
 			}
 			.ref-file-divide {
 				width: auto;
@@ -294,6 +309,9 @@
 		cursor: url('../icon/cur-w.svg') 15 10, auto;
 		.ref-file:has(.file-title:hover) {
 			@wink-border();
+		}
+		.ref-line,.ref-lineTextHighlight {
+			cursor: url('../icon/cur-w.svg') 15 10, auto !important;
 		}
 		.ref-line.hover-ref {
 			&.active-ref::after {

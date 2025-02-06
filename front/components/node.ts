@@ -20,13 +20,21 @@ type Data = {
 export const Node: FC<Data, Props> = (data, props) => {
   data.expand = true;
 
-  const clickDetailBtn = () => {
+  const gotoLoc = (showDetail = true) => {
     const {
       value: { selectionRange },
       uri
     } = props;
-    msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(selectionRange[0])]);
+    msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(selectionRange[0]), showDetail]);
   };
+
+	const clickSymbolName = () => {
+		gotoLoc(true)
+	}
+
+	const clickTag = () => {
+    gotoLoc(false);
+	}
 
   const expand = () => {
     data.expand = !data.expand;
@@ -69,8 +77,8 @@ export const Node: FC<Data, Props> = (data, props) => {
         size: 15,
         onclick: expand
       }),
-      el('div', { class: 'mt6 label', style: labelStyle }, [text(type)]),
-      el('div', { class: 'mt6 name', onclick: clickDetailBtn }, [
+      el('div', { class: 'mt6 label', style: labelStyle, onclick: clickTag }, [text(type)]),
+      el('div', { class: 'mt6 name', title: name,  onclick: clickSymbolName }, [
         match
           ? el('span', {}, [text(prefix), el('span', { class: 'highlight' }, [text(highlight)]), text(suffix)])
           : text(name),

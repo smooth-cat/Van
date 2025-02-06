@@ -1,21 +1,20 @@
-import { Position } from 'vscode';
-import { FetchRefRes, Reference, ReqType, Uri } from '../../shared/var';
+import { Define, FetchRefRes, Reference, ReqType, Uri } from '../../shared/var';
 import { Expand } from '../components/expand';
 import { iArrow } from '../icon';
 import { Icon } from '../icon/fc';
 import { el, fn, text } from '../runtime/el';
 import { FC } from '../runtime/type';
-import { use } from '../runtime/context';
-import { AsyncState } from '../hook/use-async';
 import { msg } from '../util/var';
-import { computed, toRaw, watch } from '@vue/reactivity';
+import { toRaw } from '@vue/reactivity';
 import { onUnmount } from '../runtime/life-circle';
 import { cNames } from '../runtime/util';
+import { Tooltip } from '../components/tooltip';
 export type Props = {
   uri: Uri;
   ignoreRefKey: Set<string>;
   ignorePaths: Set<string>;
   clearable: boolean;
+	define: Define;
 };
 type Data = {
 	hoverI: number;
@@ -26,10 +25,8 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 	data.hoverI = -1;	
 
   function genIgnoreKey(it: Reference) {
-    return `${it.prefix}.${it.suffix}.${props.uri.relativePath}`;
+    return `${it.lineText}.${it.range[0].line}.${it.range[0].character}.${props.uri.relativePath}`;
   }
-
-  const showedRefs = computed(() => (uri.showMore ? props.refs : props.refs.slice(0, 10)));
 
   function expand(e: Event) {
     e.stopPropagation();
@@ -37,7 +34,9 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
   }
 
   function clearFile() {
-    props.ignorePaths.add(props.uri.relativePath);
+		if(props.clearable) {
+			props.ignorePaths.add(props.uri.relativePath);
+		}
   }
 
   function clickRefItem(reference: Reference) {
@@ -48,7 +47,7 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
     }
     const pos = reference.range[0];
     const { uri } = props;
-    msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(pos)]);
+    msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(pos), true]);
   }
 
   function handleShowMore() {
@@ -56,7 +55,9 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
   }
 
   function onEnter(i: number) {
-		data.hoverI = i;
+		if(props.clearable) {
+			data.hoverI = i;
+		}
 	}
   function onLeave() {
 		data.hoverI = -1;
@@ -66,16 +67,24 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
     // dom = undefined as any;
   });
 
-  return () => {
-    const { uri, ignoreRefKey } = props;
+	const DefineTag = 'Def';
 
+  return () => {
+    const { uri, ignoreRefKey, refs, define } = props;
+		const showedRefs = uri.showMore ? refs : refs.slice(0, 10);
     const fileName = uri.relativePath.split('/').pop() || '无';
 
     return [
       el('div', { class: 'ref-file' }, [
-        el('div', { class: `file-title ${uri.active ? 'active-file' : ''} `, onclick: clearFile }, [
+        el('div', { class: cNames('file-title', { 'active-file': uri.active }), onclick: clearFile }, [
           // TODO: 使用 icon-font
           fn(Icon, { class: `file-expand ${uri.expand ? 'expanded' : ''}`, i: iArrow, size: 15, onclick: expand }),
+					define.uri.path === uri.path && fn(Tooltip, {
+						els: [el('div', { class: 'define-circle-flag' }, [text(DefineTag)])],
+						tip: '定义文件',
+						type: 'bottom',
+						class: 'define-wrapper'
+					}),
           el('div', { class: 'file-name' }, [text(fileName)]),
           el('div', { class: 'file-path ellipsis', title: uri.relativePath }, [text(uri.relativePath)])
         ]),
@@ -86,19 +95,20 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
             el(
               'div',
               { class: 'ref-grid' },
-              showedRefs.value.reduce((lis, it: Reference, i) => {
+              showedRefs.reduce((lis, it: Reference, i) => {
+								const isDefine = define.range[0].line === it.range[0].line && define.range[0].character === it.range[0].character;
                 if (ignoreRefKey.has(genIgnoreKey(it))) return lis;
                 lis.push(
                   ...[
                     el(
                       'div',
                       {
-                        class: cNames('ref-line', { 'active-ref': it.active, 'hover-ref': data.hoverI === i }),
+                        class: cNames('ref-line', { 'define-ref': isDefine, 'active-ref': it.active, 'hover-ref': data.hoverI === i }),
                         onclick: () => clickRefItem(it),
                         onmouseenter: () => onEnter(i),
                         onmouseleave: onLeave
                       },
-                      [text(it.range[0].line + 1)]
+                      [text(isDefine ? DefineTag : it.range[0].line + 1)]
                     ),
                     el(
                       'div',

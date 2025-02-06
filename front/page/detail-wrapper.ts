@@ -19,6 +19,7 @@ type WrapperData = {
 };
 
 export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
+	const rData = toRaw(data);
   data.active = {
     uri: undefined,
     reference: undefined,
@@ -56,6 +57,61 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
       }
     }
   }
+
+	const modeHandler = {
+		[LockType.UnLock]: function(uri, pos) {
+			// 没有引用部分需要更新
+			if(!hasRefs()) {
+				return true;
+			};
+			
+			// 与激活位置相同则说明不需要更新
+			if (posInRange(uri, pos, rData.active.uri, rData.active.reference?.range)) {
+				return;
+			}
+
+			// 在当前引用内，只需更新激活位置，不需要重新获取
+			this.found = findActiveByPos(uri, pos, rData);
+
+			// 没在当前引用中找到则需要更新
+			return !this.found;
+		},
+		[LockType.HalfLock]: function(uri, pos, kind, isSelect) {
+			// 没有引用部分需要更新
+			if(!hasRefs()) {
+				return true;
+			};
+			
+			// 位置是当前引用不更新
+			if (posInRange(uri, pos, rData.active.uri, rData.active.reference?.range)) {
+				return;
+			}
+			// 在当前引用内，只需更新激活位置，不需要重新获取
+			this.found = findActiveByPos(uri, pos, rData);
+			if(this.found) {
+				return;
+			}
+
+			// 不在当前引用内，必须是 mouse select 才更新
+			return isSelect;
+		},
+		[LockType.Lock]: function(uri, pos) {
+			// 没有引用部分需要更新
+			if(!hasRefs()) {
+				return true;
+			};
+			
+			// 位置是当前引用不更新
+			if (posInRange(uri, pos, rData.active.uri, rData.active.reference?.range)) {
+				return;
+			}
+
+			// 不论 pos 是否在当前引用都不予更新
+			this.found = findActiveByPos(uri, pos, rData);
+			return;
+		},
+	}
+
   /**
    * 更新 define 嵌套层级
    * 1. 初始化
@@ -66,23 +122,12 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
    */
   const [run, reset] = useAsync(
     'refs',
-    async function (uri, pos, kind: RefreshKind) {
-      const rData = toRaw(data);
+    async function (uri, pos, kind: RefreshKind, isSelect = false) {
       if (kind === RefreshKind.DocEdit) {
       } else {
         // 有详情时，移动位置在包含在详情内则不需重新加载，只改变 激活位置即可
-        if (hasRefs()) {
-          // 与激活位置相同则说明不需要更新
-          if (posInRange(uri, pos, rData.active.uri, rData.active.reference?.range)) {
-            return this.value;
-          }
-
-          // 在当前引用内，只需更新激活位置，不需要重新获取
-          this.found = findActiveByPos(uri, pos, rData);
-          if (this.found) {
-            return this.value;
-          }
-        }
+        const shouldRequest = modeHandler[data.lockType].call(this, uri, pos, kind, isSelect);
+				if(!shouldRequest) return this.value;
       }
       const res = await msg.request<FetchRefRes>(ReqType.Command, ['fetchReference', toRaw(pos), toRaw(uri)]);
 
@@ -90,7 +135,11 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 
       if (define && !!fileRefs?.length) {
         this.found = findActiveByProp(fileRefs);
-        return { ...res.data, key: performance.now() };
+				let newKey = performance.now();
+				if(kind === RefreshKind.DocEdit && this.value?.key) {
+					newKey = this.value.key;
+				}
+        return { ...res.data, key: newKey };
       } else {
         if (ENV === 'dev') {
           info('未找到任何引用!');
@@ -133,7 +182,6 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
   const dispose1 = msg.on(MsgType.CursorMove, ({ uri, pos, kind }) => handleMoveOrSelect(uri, pos, kind));
   const dispose2 = msg.on(MsgType.SelectionChange, ({ uri, former, kind }) => handleMoveOrSelect(uri, former, kind, true));
   const dispose3 = msg.on(MsgType.CodeChanged, async ({ uri }: { uri: Uri }) => {
-    const rData = toRaw(data);
     if (!hasRefs()) return;
     const define = rData.refs.value.define;
     const fileRefs = rData.refs.value.fileRefs;
@@ -149,7 +197,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
       ]);
       if (!res.data) return;
       newDefinePos = res.data;
-      run(uri, define.range[0], RefreshKind.DocEdit);
+      run(uri, newDefinePos, RefreshKind.DocEdit);
     }
     // 改的是激活文件
     else if (uri.path === rData.active.uri?.path) {
@@ -161,40 +209,53 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
     }
   });
 
+	const dispose4 = msg.on(MsgType.CreateFile, () => {
+		const fileRefs = rData.refs.value?.fileRefs;
+		if(!fileRefs?.length) return;
+		
+		const found = fileRefs.find(it => it[0].active) || fileRefs[0];
+
+		const [uri, refs] = found;
+		if(!refs?.length) return;
+		const foundRef = refs.find(it => it.active) || refs[0];
+		
+		run(uri, foundRef.range[0], RefreshKind.DocEdit);
+	});
+
   onUnmount(() => {
     dispose1();
     dispose2();
     dispose3();
+		dispose4();
   });
 
   function handleMoveOrSelect(uri, pos, kind, isSelect = false) {
 		let shouldRefresh = false;
 
-		const hasData = hasRefs();
+		// const hasData = hasRefs();
 		const normalCase = [
 			RefreshKind.Mouse,
 			RefreshKind.BackOrForward,
 			RefreshKind.GotoLocation,
-			RefreshKind.DocEdit
 		].includes(kind);
-
-		switch (data.lockType) {
-			case LockType.UnLock:
-				shouldRefresh = normalCase;
-				break;
-			case LockType.HalfLock:
-				const isMouseSelect = kind === RefreshKind.Mouse && isSelect;
-				shouldRefresh = normalCase && (isMouseSelect || !hasData);
-				break;
-			case LockType.Lock:
-				shouldRefresh = normalCase && !hasData;
-				break;
+		shouldRefresh = normalCase;
+		// switch (data.lockType) {
+		// 	case LockType.UnLock:
+		// 		shouldRefresh = normalCase;
+		// 		break;
+		// 	case LockType.HalfLock:
+		// 		const isMouseSelect = kind === RefreshKind.Mouse && isSelect;
+		// 		shouldRefresh = normalCase && (isMouseSelect || !hasData);
+		// 		break;
+		// 	case LockType.Lock:
+		// 		shouldRefresh = normalCase && !hasData;
+		// 		break;
 		
-			default:
-				break;
-		}
+		// 	default:
+		// 		break;
+		// }
     if (shouldRefresh) {
-      run(uri, pos, kind);
+      run(uri, pos, kind, isSelect);
     }
   }
 

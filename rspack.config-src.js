@@ -4,6 +4,17 @@ module.exports = {
 	target: 'node18.12',
 	optimization: {
     minimize: process.env.ENV !== 'dev',
+		minimizer: [
+			new rspack.SwcJsMinimizerRspackPlugin({
+				minimizerOptions: {
+					compress: {
+						drop_console: true,
+						drop_debugger: true,
+					},
+				},
+			}),
+			new rspack.LightningCssMinimizerRspackPlugin()
+		]
   },
 	output: {
     path: path.resolve(__dirname, './dist-ext'),

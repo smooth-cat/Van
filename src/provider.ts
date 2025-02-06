@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import { Message } from '../shared/message';
 import { MsgType } from '../shared/var';
-export class GuideViewProvider implements vscode.WebviewViewProvider {
+export class NavViewProvider implements vscode.WebviewViewProvider {
 
 	private _view?: vscode.WebviewView;
 
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
-		public onResolved?: (self: GuideViewProvider) => void,
+		public onResolved?: (self: NavViewProvider) => void,
 	) { }
 
 	public resolveWebviewView(

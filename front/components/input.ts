@@ -21,11 +21,12 @@ export const Input: FC<Data, Props> = (data, props) => {
       el('div', { class: 'closeInput' }, [
         el('input', {
           ...resProps,
-          class: 'outlineInput',
+          class: 'inputEl',
+					title: resProps.placeholder || '',
           value,
           oninput: e => onChange(e.target.value)
         }),
-        fn(Icon, { style: `opacity: ${value ? '1' : '0'}`, class: 'close', i: iCloseSolid, size: 18, onclick: clear })
+        !!value && fn(Icon, { style: `opacity: ${value ? '1' : '0'}`, class: 'close', i: iCloseSolid, size: 18, onclick: clear })
       ])
     ];
   };

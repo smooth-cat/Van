@@ -1,12 +1,14 @@
 {
-	"name": "code-guide",
-	"description": "guide for fast read code",
-	"version": "0.0.1",
+	"name": "van",
+	"displayName": "Van",
+	"description": "a navigator for fast read code",
+	"version": "0.0.3",
 	"publisher": "smooth-cat",
 	"private": true,
 	"license": "MIT",
 	"browser": "dist/index.js",
 	"distExt": "dist-ext/extension.js",
+	"icon": "van.png",
 	"repository": {
 		"type": "git",
 		"url": ""
@@ -26,7 +28,7 @@
 	"contributes": {
 		"keybindings": [
 			{
-				"command": "code-guide.lockMode",
+				"command": "Van.lockMode",
 				"key": "f12",
 				"when": "editorTextFocus"
 			}
@@ -34,42 +36,42 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"icon": "svelte-let.png",
-					"title": "code-guide",
-					"id": "code-guide"
+					"icon": "van.png",
+					"title": "Van",
+					"id": "Van"
 				}
 			]
 		},
 		"views": {
-			"code-guide": [
+			"Van": [
 				{
 					"type": "webview",
-					"id": "code-guide",
-					"name": "code-guide"
+					"id": "Van",
+					"name": "Van"
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "code-guide.forward",
+				"command": "Van.forward",
 				"title": "🤡前进👉️",
-				"category": "code-guide"
+				"category": "Van"
 			},
 			{
-				"command": "code-guide.backward",
+				"command": "Van.backward",
 				"title": "👈️后退🤡",
-				"category": "code-guide"
+				"category": "Van"
 			}
 		],
 		"menus": {
 			"webview/context": [
 				{
-					"command": "code-guide.forward",
-					"when": "webviewId == 'code-guide'"
+					"command": "Van.forward",
+					"when": "webviewId == 'Van'"
 				},
 				{
-					"command": "code-guide.backward",
-					"when": "webviewId == 'code-guide'"
+					"command": "Van.backward",
+					"when": "webviewId == 'Van'"
 				}
 			]
 		}
@@ -82,8 +84,11 @@
 		"dev": "npm run clean && npm run pack",
 		"pack": "ENV=dev rspack serve -c ./rspack.config.js & ENV=dev rspack build -c ./rspack.config-src.js",
 		"build-prod": "ENV=prod rspack build -c ./rspack.config.js & ENV=prod rspack build -c ./rspack.config-src.js",
-		"build": "npm run clean && npm run build-prod",
-		"clean": "rm -rf ./dist && rm -rf ./dist-ext"
+		"pub": "npm run clean && npm run build-prod && npm run vsce && npm run rei",
+		"compile": "echo ''",
+		"clean": "rm -rf ./dist && rm -rf ./dist-ext",
+		"vsce": "rm -rf node_modules && npm install && vsce package && vsce publish",
+		"rei": "rm -rf node_modules && pnpm install"
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^11.0.2",
@@ -95,6 +100,7 @@
 		"@types/vscode": "^1.50.0",
 		"@typescript-eslint/eslint-plugin": "^4.16.0",
 		"@typescript-eslint/parser": "^4.16.0",
+		"@vscode/vsce": "2.27.0",
 		"css-loader": "^7.1.2",
 		"eslint": "^7.21.0",
 		"less": "^4.2.0",

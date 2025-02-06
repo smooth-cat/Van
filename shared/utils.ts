@@ -140,15 +140,31 @@ export const exchange = (arr: any[], i: number, j: number) => {
   arr[j] = temp;
 };
 
-export function glob(globStr: string) {
-  // 转换 glob 为正则表达式
-  const regexString = globStr
-      .replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\\$1')  // 转义特殊字符
-      .replace(/\\\*/g, '.*')  // '*' 匹配任意字符
-      .replace(/\\\?/g, '.')   // '?' 匹配单个字符
-      .replace(/^\\\//, '^\/') // 从头匹配 '/'
-      .replace(/\\\//g, '\/'); // 匹配 '/'
-  
-  const regex = new RegExp('^' + regexString + '$');
-  return regex;
+export function getRelativePath(fullPath: string, workspacePath: string) {
+	return fullPath.slice(workspacePath.length + 1);
+}
+
+
+/**
+ * [0,start]  满足条件
+ * [end,length-1] 不满足条件
+ */
+export function lastFit<T>(arr: T[], fit: (midV: T) => boolean) {
+  const len = arr.length;
+  let start = -1;
+  let end = len;
+
+  while (start + 1 < end) {
+    const mid = (start + end) >> 1;
+    const midV = arr[mid];
+    // 满足条件将, 且数组具有单调性，将 start 扩充至 mid
+    if (fit(midV)) {
+      start = mid;
+    } 
+    // 不满足条件将，将 end 扩充至 mid
+    else {
+      end = mid;
+    }
+  }
+  return start;
 }

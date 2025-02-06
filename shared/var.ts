@@ -14,6 +14,7 @@ export enum MsgType {
   CursorMove = 'CursorMove',
   SelectionChange = 'SelectionChange',
   CodeChanged = 'CodeChanged',
+  CreateFile = 'CreateFile',
   DeleteFile = 'DeleteFile',
   RenameFile = 'RenameFile',
   Request = 'Request',

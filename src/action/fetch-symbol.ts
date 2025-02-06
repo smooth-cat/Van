@@ -1,14 +1,24 @@
 import { commands, DocumentSymbol, TextDocument, TextEditor, Uri, window, workspace, Range, Position } from 'vscode';
-import { dfs, pick } from '../../shared/utils';
-import { SDocNode, SymbolKind } from '../../shared/var';
+import { dfs, isFormer, lastFit, pick } from '../../shared/utils';
+import { DocNode, SDocNode, SymbolKind } from '../../shared/var';
 import { openDocument, retryGetSymbols } from '../methods';
+import { LRUCache } from '../methods/lru-cache';
+export type FetchSymbolRes = {
+	hasRepeat: boolean;
+	symbols: SDocNode[];
+};
+export const symbolCache = new LRUCache<string, FetchSymbolRes>(100);
 
-export async function fetchSymbol(uri?: Uri) {
+export async function fetchSymbol(uri: Uri) {
   uri = uri ?? window.activeTextEditor?.document?.uri;
   if (!uri) {
     console.log('当前无打开的文件');
     return { hasRepeat: false, symbols: [] as SDocNode[]};
   }
+
+	if(symbolCache.has(uri.path)) {
+		return symbolCache.get(uri.path);
+	}
 
   uri = Uri.from(uri);
 	console.log('看看uri',uri);
@@ -20,8 +30,8 @@ export async function fetchSymbol(uri?: Uri) {
 
     const [doc, { hasRepeat, symbols }] = await Promise.all([docP, docSymbolsP]);
     const root = {
-			key: uri.fsPath,
-			selfKey: uri.fsPath,
+			key: uri.path,
+			selfKey: uri.path,
       children: symbols,
     } as any as SDocNode;
 
@@ -32,70 +42,87 @@ export async function fetchSymbol(uri?: Uri) {
         break;
       }
     }
-
     dfs(
       root,
       (item, stack) => {
-				// if(item.children?.length) {
-				// 	item.children.sort((a, b) => a.range.start.line - b.range.start.line)
-				// }
+        // if(item.children?.length) {
+        // 	item.children.sort((a, b) => a.range.start.line - b.range.start.line)
+        // }
 
-				const parent = stack.at(-1);
+        const parent = stack.at(-1);
         const newNode = pick(item, ['key', 'selfKey', 'name', 'location' as any, 'kind', 'line', 'selectionRange']);
-				newNode.range = item?.['location']?.range;
-				// TODO: 子类型修正依赖于 旧 的 parent 需要注意
-				kindFix?.(newNode, doc, parent);
+        newNode.range = item?.['location']?.range;
+        // TODO: 子类型修正依赖于 旧 的 parent 需要注意
+        kindFix?.(newNode, doc, parent);
         item['newNode'] = newNode;
 
-				if(!parent) return;
-				const { repeat = new Map<string, DocumentSymbol>(), key: pSelfKey } = parent['newNode'] as any;
-				const selfKey = `${newNode.name}.${newNode.kind}`;
-				const record = repeat.get(selfKey);
-				
-				if(record) {
-					// 修正第一个记录项
-					if(record['_i'] === 0) {
-						record['_i']++;
-						const rSelfKey = `${selfKey}.${record['_i']}`;
-						record.key = `${pSelfKey}-${rSelfKey}`;
-						record.selfKey = rSelfKey;
-					}
-					newNode['_i'] = record['_i'] + 1;
-					repeat.set(selfKey, newNode);
-				} 
-				else {
-					newNode['_i'] = 0;
-					repeat.set(selfKey, newNode);
-				}
-				// 不一定对，如果后续重名会修改末尾的 i
-				const firstSelfKey = `${selfKey}.${newNode['_i']}`;
-				newNode.key = `${pSelfKey}-${firstSelfKey}`;
-				newNode.selfKey = firstSelfKey;
-				parent['newNode'].repeat = repeat;
+        if (!parent) return;
+        const { repeat = new Map<string, DocumentSymbol>(), key: pSelfKey } = parent['newNode'] as any;
+        const selfKey = `${newNode.name}.${newNode.kind}`;
+        const record = repeat.get(selfKey);
+
+        if (record) {
+          // 修正第一个记录项
+          if (record['_i'] === 0) {
+            record['_i']++;
+            const rSelfKey = `${selfKey}.${record['_i']}`;
+            record.key = `${pSelfKey}-${rSelfKey}`;
+            record.selfKey = rSelfKey;
+          }
+          newNode['_i'] = record['_i'] + 1;
+          repeat.set(selfKey, newNode);
+        } else {
+          newNode['_i'] = 0;
+          repeat.set(selfKey, newNode);
+        }
+        // 不一定对，如果后续重名会修改末尾的 i
+        const firstSelfKey = `${selfKey}.${newNode['_i']}`;
+        newNode.key = `${pSelfKey}-${firstSelfKey}`;
+        newNode.selfKey = firstSelfKey;
+        parent['newNode'].repeat = repeat;
       },
       (item, stack) => {
-				const newNode = item['newNode'];
+        const newNode: DocumentSymbol = item['newNode'];
         const parent = stack.at(-1);
+        const childs = newNode.children;
+        childs?.sort((a, b) => {
+          return isFormer(a.range.start, b.range.start) ? -1 : 1;
+        });
 
-				if(!parent) return;
-        
-				const newNodeP = parent['newNode'];
-				const { children = [] } = newNodeP;
-				children.push(newNode);
-				item['newNode'] = undefined;
-				newNodeP.children = children;
+        if (!parent) return;
+
+        const newNodeP = parent['newNode'];
+        const children: DocumentSymbol[] = newNodeP.children || [];
+        // 二分查找，找到前一个比当前项小的 i，插入在其后面, 相当于 (logN + N) * N，实测比 sort 慢
+        // const prevI = lastFit(children, v => {
+        //   const is = isFormer(v.range.start, newNode.range.start);
+        //   return is;
+        // });
+        // children.splice(prevI + 1, 0, newNode);
+        children.push(newNode);
+        item['newNode'] = undefined;
+        newNodeP.children = children;
       },
       'children'
     );
 
     const res = root['newNode'].children;
     console.log('当前活动文件symbols', res);
-    return { hasRepeat, symbols: res as SDocNode[]};
+		const gotResult = { hasRepeat, symbols: res as SDocNode[]};
+		// 长度为0的可能是未成功Fetch的
+		if(res.length !== 0) {
+			symbolCache.set(uri.path, gotResult);
+		}
+    return gotResult
   } catch (error) {
     console.log('获取symbols错误', error);
 		return { hasRepeat: false, symbols: [] as SDocNode[]};
   }
 }
+export function delSymbolsCache(newDoc: TextDocument) {
+	symbolCache.delete(newDoc.uri.path);
+}
+
 export const fixNode = [
   {
     test: /\.(js|ts|tsx)$/,

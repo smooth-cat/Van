@@ -1,10 +1,9 @@
 export class LRUCache<K = string, V = any> {
   private maxSize: number;
-  private cache: Map<K, V>;
+  private cache: Map<K, V> = new Map();;
 
   constructor(maxSize: number) {
     this.maxSize = maxSize;
-    this.cache = new Map();
   }
 
   get(key: K): V | undefined {
@@ -35,7 +34,7 @@ export class LRUCache<K = string, V = any> {
   }
 
 	// 新增 has 方法，检查某个键是否在缓存中
-	has(key: K): boolean {
-		return this.cache.has(key);
-	}
+	has = this.cache.has.bind(this.cache) as typeof this.cache.has;
+	
+	delete = this.cache.delete.bind(this.cache) as typeof this.cache.delete;
 }

@@ -3,9 +3,10 @@ import { fetchSymbol } from "./fetch-symbol";
 import { SDocNode } from "../../shared/var";
 
 export async function fetchSymbolPos(uri: Uri, symbolKey: string) {
-	const keys = symbolKey.split('-').slice(1);
 	uri = Uri.from(uri);
-	const {symbols: docSymbols} = await fetchSymbol();
+	// symbolKey = `path-k1-k2`，
+	const keys = symbolKey.slice(uri.path.length+1).split('-');
+	const {symbols: docSymbols} = await fetchSymbol(uri);
 	let currArr = docSymbols;
 	let found: SDocNode|undefined;
 	let i = 0;
