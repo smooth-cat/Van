@@ -1,11 +1,11 @@
-import { Define, FileRef, MsgType, Reference, ReqType, Uri } from '../../shared/var';
+import { Define, FileRef, LockType, MsgType, Reference, ReqType, Uri } from '../../shared/var';
 import { el, fn, text } from '../runtime/el';
 import { FC } from '../runtime/type';
 import './detail.less';
 import { Icon } from '../icon/fc';
 import { iCancel, iClose, iDbExp, iDecSquare, iHalfLock, iLock, iPlusSquare, iPrevious, iRubber, iTool, iUnLock } from '../icon';
 import { DetailFile } from './detail-ref-file';
-import { Events, LockType, msg } from '../util/var';
+import { msg } from '../util/var';
 import { Tooltip } from '../components/tooltip';
 import { AutoHeight } from 'scrollv';
 import { onUnmount } from '../runtime/life-circle';
@@ -18,6 +18,7 @@ import { Minimatch } from 'minimatch';
 import { useDebounceValue } from '../hook/use-debounce-value';
 import { getRelativePath } from '../../shared/utils';
 import { useComputed } from '../runtime/use-computed';
+import { useConfig } from '../hook/use-defualt';
 
 export type IActive = {
   uri?: Uri;
@@ -39,8 +40,9 @@ export type Data = {
     start: number;
     end: number;
   };
+	defaultSearch: string;
   search: string;
-	dSearch: string;
+	debounceSearch: string;
   expand: boolean;
 	clearable: boolean;
 	ignorePaths: Set<String>;
@@ -51,8 +53,10 @@ export const Detail: FC<Data, Props> = (data, props) => {
     start: 0,
     end: 0
   };
-  data.search = 'node_modules';
-	useDebounceValue('search', 'dSearch', 300);
+	useConfig('defaultSearch', 'IgnoreRefFile');
+	const wHandle = watch(() => data.defaultSearch, (v) => data.search = v);
+  data.search = data.defaultSearch;
+	useDebounceValue('search', 'debounceSearch', 300);
   data.expand = true;
 	data.ignorePaths = new Set();
 	data.ignoreRefKey = new Set();
@@ -192,7 +196,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
 	const dispose3 = msg.on(MsgType.RenameFile, renameRefFile);
 
 	const ignoreReg = computed(() => {
-		let input = data.dSearch.trim();
+		let input = data.debounceSearch.trim();
 		const lastChar = input.at(-1);
 		const endWithSlash = lastChar === '\\' || lastChar === '/';
 		if(lastChar != null) {
@@ -217,6 +221,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
 		dispose1();
 		dispose2();
 		dispose3();
+		wHandle.stop();
   });
 
   return () => {

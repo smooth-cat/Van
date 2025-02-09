@@ -14,9 +14,3 @@ export const Events = new BaseEvent();
 export enum FrontE {
 	TreeExpand = 'TreeExpand'
 }
-
-export enum LockType {
-	Lock,
-	UnLock,
-	HalfLock
-}

@@ -11,6 +11,7 @@ export type LabelItem = {
 
 export type Props = {
   labels: Set<SymbolKind>;
+	defaultLabels: SymbolKind[];
 };
 type Data = {
   fixType: string;
@@ -23,7 +24,6 @@ type Data = {
 
 export const LabelFilter: FC<Data, Props> = (data, props) => {
   const { labels } = props;
-	const defaultLabels = Array.from(labels);
 	data.visible = false;
   data.fixType = '';
   data.fixedPos = {
@@ -81,7 +81,7 @@ export const LabelFilter: FC<Data, Props> = (data, props) => {
 
 	const setToDefault = () => {
 		labels.clear();
-		defaultLabels.forEach(it => labels.add(it));
+		props.defaultLabels.forEach(it => labels.add(it));
 	}
 
 	const toggle = () => {

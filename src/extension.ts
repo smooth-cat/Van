@@ -1,18 +1,16 @@
 import * as vscode from 'vscode';
 import * as action from './action/index';
-import { Message } from '../shared/message/index';
 import { MsgType, ReqType } from '../shared/var';
 import { emitSelectOrCursorChange, handleCommandMove } from './event-pre-process/select';
 import { debounce } from '../shared/utils';
 import { NavViewProvider } from './provider';
-import { updateDocCache } from './methods';
+import { getChangedConf, updateDocCache } from './methods';
 
 const { window, workspace } = vscode;
 
 
 export function activate(context: vscode.ExtensionContext) {
-
-	const provider = new NavViewProvider(context.extensionUri, onResolved);
+	const provider = new NavViewProvider(context.extensionUri, context, onResolved);
 
 	context.subscriptions.push(
 		// viewType 视图的唯一id。这应该与package.json中views贡献的id匹配
@@ -48,6 +46,15 @@ export function activate(context: vscode.ExtensionContext) {
 		 * 注册 cmd shift p 命令，与 package.contributes.commands 联动
 		 * provider 通过 postMessage 和 webview
 		 */
+		vscode.commands.registerCommand('Van.settings', async() => {
+			vscode.commands.executeCommand('workbench.action.openSettings', 'Van.settings')
+		}),
+		vscode.workspace.onDidChangeConfiguration(async (e) => {
+			const changedConf = getChangedConf(e);
+			if(changedConf) {
+				provider.msg.emit(MsgType.ConfigChange, changedConf)
+			} 
+    }),
 		vscode.commands.registerCommand('Van.forward', async() => {
 			const res = await vscode.commands.executeCommand('workbench.action.navigateForward')
 			handleCommandMove(provider.msg);
@@ -94,10 +101,6 @@ export function activate(context: vscode.ExtensionContext) {
 				res.send({ error: error ?? 'unknown error' });
 			}
 		});
-
-		self.msg.onReq('', (res, data) => {
-			
-		})
 	}
 }
 

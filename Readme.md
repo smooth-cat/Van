@@ -42,6 +42,12 @@
 
 <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/outline.png?raw=true" width="700" />
 
+### 打开配置项
+
+1. 在插件中右键，选择菜单中 “🕹设置” 项即可打开配置
+
+<img src="https://github.com/smooth-cat/Van/blob/master/readme-img/setting.png?raw=true" width="700" />
+
 # Van Plugin
 Provides programming navigation with features like **Real-time Reference Display** and **Code Outline**.
 
@@ -81,3 +87,9 @@ If this plugin helps you, please give it a good review 😝 Happy coding ~
 2. Name search (use @ prefix for case-sensitive search)
 
 <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/outline.png?raw=true" width="700" />
+
+### Open Setting
+
+1. Right click in the plugin and select from the menu “🕹配置项” option can open the configuration
+
+<img src="https://github.com/smooth-cat/Van/blob/master/readme-img/setting.png?raw=true" width="700" />

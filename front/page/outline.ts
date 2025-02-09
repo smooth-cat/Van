@@ -16,21 +16,22 @@ import { iWarn } from '../icon';
 import { info, warn } from '../components/toast';
 import Empty from '../icon/nav-empty.png';
 import { Loading } from '../components/loading';
+import { useConfig } from '../hook/use-defualt';
 export type Props = {};
 type Data = {
   tree: AsyncState<DocNode[]>;
   uri: Uri;
+	defaultLabels: SymbolKind[];
   showLabels: Set<SymbolKind>;
-  ignoreLabels: Set<SymbolKind>;
   search: string;
 	hasRepeat: boolean;
 };
 
 export const Outline: FC<Data, Props> = (data, props) => {
+	useConfig('defaultLabels', 'OutlineTag');
   data.showLabels = new Set([
-    ...AllSymbolKinds
+    ...data.defaultLabels
   ]);
-  data.ignoreLabels = new Set();
   data.search = '';
 	data.hasRepeat = false;
 
@@ -81,9 +82,7 @@ export const Outline: FC<Data, Props> = (data, props) => {
     dfs(
       root,
       node => {
-        if (showLabels.has(node.kind)) {
-          node['newNode'] = { ...node, children: undefined };
-        }
+				node['newNode'] = { ...node, children: undefined };
       },
       (node, stack) => {
         const parent = stack.at(-1);
@@ -97,12 +96,18 @@ export const Outline: FC<Data, Props> = (data, props) => {
         const start = nodeName.indexOf(search);
         const end = start + search.length;
 
+				const matchLabel = showLabels.has(newNode.kind);
+				const matchName = start !== -1;
+
         newNode.start = start;
         newNode.end = end;
 
-        const currNodeMatched = start !== -1 || !!newNode.childMatch;
-        // match 传递
-        pNewNode.childMatch = currNodeMatched;
+        const currNodeMatched = (matchLabel && matchName) || !!newNode.childMatch;
+
+				if(currNodeMatched) {
+					// match 传递
+					pNewNode.childMatch = true;
+				}
 
         if (!currNodeMatched) return;
 
@@ -141,7 +146,7 @@ export const Outline: FC<Data, Props> = (data, props) => {
     const { tree, uri } = data;
     return [
       el('div', { class: 'outline' }, [
-        fn(LabelFilter, { labels: data.showLabels }),
+        fn(LabelFilter, { labels: data.showLabels, defaultLabels: data.defaultLabels }),
         fn(OutlineSearch, { value: data.search, updateSearch }),
 				data.hasRepeat && el('div', { class: 'hasRepeat',  key: 'hasRepeat', title: '关闭(不再提示)', onclick: closeRepeat }, [
 					text('检测到标识符重复，本文件可能被多个语言插件解析！')

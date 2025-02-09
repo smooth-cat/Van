@@ -38,6 +38,10 @@ export class Message {
     this.emitter({ type, data });
   };
 
+	emitSelf = (type: string, data: any) => {
+		this.handleMessage({ type, data });
+	}
+
   clear = () => {
     this.subMap.clear();
 		this.reqSubMap.clear();

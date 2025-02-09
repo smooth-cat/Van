@@ -17,9 +17,6 @@ importers:
       scrollv:
         specifier: ^0.1.1
         version: 0.1.1
-      watchable-proxy:
-        specifier: ^2.0.8
-        version: 2.0.8
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^11.0.2
@@ -2659,9 +2656,6 @@ packages:
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
-
-  watchable-proxy@2.0.8:
-    resolution: {integrity: sha512-G38QF+b1Mxvx0IV7mccnqWp94GpNJM4wJHd3XypKVBLEPFu1SoRV0fzgRmWebwuGI6slS1oSb/DKd0rqym+1LQ==}
 
   wbuf@1.7.3:
     resolution: {integrity: sha512-O84QOnr0icsbFGLS0O3bI5FswxzRr8/gHwWkDlQFskhSPryQXvrTMxjxGP4+iWYoauLoBvfDpkrOauZ+0iZpDA==}
@@ -5558,8 +5552,6 @@ snapshots:
   v8-compile-cache@2.4.0: {}
 
   vary@1.1.2: {}
-
-  watchable-proxy@2.0.8: {}
 
   wbuf@1.7.3:
     dependencies:

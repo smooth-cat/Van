@@ -21,6 +21,7 @@ export enum MsgType {
   Response = 'Response',
   Reload = 'Reload',
   LockModeChange = 'LockModeChange',
+	ConfigChange = 'ConfigChange'
 }
 
 export enum ReqType {
@@ -215,6 +216,12 @@ export enum SymbolKind {
   TypeParameter = 25
 }
 
+export enum LockType {
+	UnLock,
+	HalfLock,
+	Lock,
+}
+
 export const AllSymbolKinds = Object.values(SymbolKind).filter(it => typeof it === 'number');
 
 export const SymbolMap = {
@@ -339,3 +346,37 @@ export const SymbolMap = {
 		};
 	}
 })();
+
+export const configMap = {
+	IgnoreRefFile: {
+		process(v: string) {
+			return v.trim()
+		}
+	},
+	OutlineTag : {
+		dataMap: (() => {
+			const tagToEnum: Record<string, SymbolKind> = {};
+			for (const key in SymbolMap) {
+				const [tagName] = SymbolMap[key];
+				tagToEnum[tagName] = Number(key) as any;
+			}
+			return tagToEnum;
+		})(),
+		process(v: string[]) {
+			v = Array.from(new Set(v));
+			return v.map((it) => this.dataMap[it])
+		}
+	},
+	 LockMode: {
+		dataMap: {
+			'无锁模式': LockType.UnLock,
+			'半锁模式': LockType.HalfLock,
+			'锁模式': LockType.Lock,
+		},
+		process(v: string) {
+			return this.dataMap[v];
+		}
+	 }
+};
+
+export const configKeys = Object.keys(configMap);

@@ -2,7 +2,7 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "a navigator for fast read code",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "smooth-cat",
 	"private": true,
 	"license": "MIT",
@@ -26,6 +26,94 @@
 	"activationEvents": [],
 	"main": "./dist-ext/extension.js",
 	"contributes": {
+		"configuration": {
+			"title": "Van 插件配置",
+			"properties": {
+				"Van.LockMode": {
+					"type": "string",
+					"enum": [
+						"无锁模式",
+						"半锁模式",
+						"锁模式"
+					],
+					"enumDescriptions": [
+						"单击标识符切换引用详情",
+						"选中标识符切换引用详情",
+						"锁住当前引用详情"
+					],
+					"default": "无锁模式",
+					"description": "引用详情-默认锁模式配置"
+				},
+				"Van.IgnoreRefFile": {
+					"type": "string",
+					"default": "node_modules",
+					"description": "引用详情-默认忽略文件(glob语法)"
+				},
+				"Van.OutlineTag": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"enum": [
+							"file",
+							"module",
+							"nspace",
+							"pkg",
+							"class",
+							"method",
+							"prop",
+							"tag",
+							"ctor",
+							"enum",
+							"intf",
+							"func",
+							"var",
+							"const",
+							"str",
+							"num",
+							"bool",
+							"arr",
+							"obj",
+							"Key",
+							"null",
+							"enumm",
+							"stru",
+							"event",
+							"opr",
+							"type"
+						]
+					},
+					"default": [
+						"file",
+						"module",
+						"nspace",
+						"pkg",
+						"class",
+						"method",
+						"prop",
+						"tag",
+						"ctor",
+						"enum",
+						"intf",
+						"func",
+						"var",
+						"const",
+						"str",
+						"num",
+						"bool",
+						"arr",
+						"obj",
+						"Key",
+						"null",
+						"enumm",
+						"stru",
+						"event",
+						"opr",
+						"type"
+					],
+					"description": "大纲-默认可见标识符类型"
+				}
+			}
+		},
 		"keybindings": [
 			{
 				"command": "Van.lockMode",
@@ -53,6 +141,11 @@
 		},
 		"commands": [
 			{
+				"command": "Van.settings",
+				"title": "🕹设置",
+				"category": "Van"
+			},
+			{
 				"command": "Van.forward",
 				"title": "🤡前进👉️",
 				"category": "Van"
@@ -65,6 +158,10 @@
 		],
 		"menus": {
 			"webview/context": [
+				{
+					"command": "Van.settings",
+					"when": "webviewId == 'Van'"
+				},
 				{
 					"command": "Van.forward",
 					"when": "webviewId == 'Van'"
@@ -115,7 +212,6 @@
 	"dependencies": {
 		"@vue/reactivity": "^3.5.12",
 		"minimatch": "^10.0.1",
-		"scrollv": "^0.1.1",
-		"watchable-proxy": "^2.0.8"
+		"scrollv": "^0.1.1"
 	}
 }

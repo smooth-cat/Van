@@ -1,20 +1,22 @@
-import { toRaw } from '@vue/reactivity';
-import { FetchRefRes, MsgType, ReqType, RefreshKind, Uri, Reference, FileRef } from '../../shared/var';
+import { toRaw, watch } from '@vue/reactivity';
+import { FetchRefRes, MsgType, ReqType, RefreshKind, Uri, Reference, FileRef, LockType } from '../../shared/var';
 import { AsyncState, useAsync } from '../hook/use-async';
 import { FC } from '../runtime/type';
-import { LockType, msg } from '../util/var';
+import { msg } from '../util/var';
 import { Detail, IActive, Props } from './detail';
 import { el, fn } from '../runtime/el';
 import { info } from '../components/toast';
 import { Position } from 'vscode';
 import { isFormer, posInRange } from '../../shared/utils';
 import { onUnmount } from '../runtime/life-circle';
+import { useConfig } from '../hook/use-defualt';
 
 export type WrapperProps = {};
 type WrapperData = {
   refs: AsyncState<FetchRefRes>;
   detailStack: any[];
   active: IActive;
+	defaultLockType: LockType;
 	lockType: LockType;
 };
 
@@ -26,7 +28,12 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
     index: undefined
   };
 
-	data.lockType = LockType.UnLock;
+	useConfig('defaultLockType', 'LockMode');
+	// 为用户在修改默认值后能及时看到效果
+	const wHandle = watch(() => data.defaultLockType, (v) => {
+		data.lockType = v;
+	})
+	data.lockType = data.defaultLockType;
 
   function findActiveByProp(fileRefs: FileRef[]) {
     for (let i = 0; i < fileRefs.length; i++) {
@@ -227,6 +234,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
     dispose2();
     dispose3();
 		dispose4();
+		wHandle.stop();
   });
 
   function handleMoveOrSelect(uri, pos, kind, isSelect = false) {

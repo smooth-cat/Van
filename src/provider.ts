@@ -1,20 +1,26 @@
 import * as vscode from 'vscode';
 import { Message } from '../shared/message';
 import { MsgType } from '../shared/var';
+import { getConfig } from './methods';
 export class NavViewProvider implements vscode.WebviewViewProvider {
 
 	private _view?: vscode.WebviewView;
 
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
+		private readonly extCtx: vscode.ExtensionContext,
 		public onResolved?: (self: NavViewProvider) => void,
 	) { }
+
+	disposes: vscode.Disposable[] = [];
 
 	public resolveWebviewView(
 		webviewView: vscode.WebviewView,
 		context: vscode.WebviewViewResolveContext,
 		_token: vscode.CancellationToken,
 	) {
+		this.disposes.forEach(v => v.dispose());
+		this.disposes = [];
 		this._view = webviewView;
 		const { webview } = webviewView;
 
@@ -28,16 +34,25 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 		}; 
 		
 		webview.html = this._getHtmlForWebview(webview);
-		
+		this.disposes.push(
+			webviewView.onDidChangeVisibility(() => {
+				if(webviewView.visible) {
+					webview.html = this._getHtmlForWebview(webview);
+				}
+			})
+		)
 		this.msg = new Message(
 			(msg) => { console.log('编辑器事件', msg);
 			 webview.postMessage(msg)} ,
-			(fn) => webview.onDidReceiveMessage((msg) => fn(msg)),
-		)
+			(fn) => this.disposes.push(webview.onDidReceiveMessage((msg) => fn(msg))),
+		);
+		const msgDisposable = new vscode.Disposable(() => this.msg.clear());
+		this.disposes.push(msgDisposable);
+
+		this.extCtx.subscriptions.push(...this.disposes);
 
 		this.msg.on(MsgType.Reload, () => {
 			console.log('收到reload');
-			
 			webview.html = this._getHtmlForWebview(webview);
 		})
 
@@ -56,14 +71,18 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview) {
+		// Use a nonce to only allow a specific script to be run.
+		const nonce = getNonce();
+
+		const conf = JSON.stringify(getConfig());
+		console.log('conf', conf);
 		
+		const injectedConfigScript = `<script nonce="${nonce}">window['conf']=${conf}</script>`;
+		// const injectedConfigScript = ``;
 		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 		const scriptUri = this.getSrc('index.js');
 		// Do the same for the stylesheet.
 		const cssUri = this.getSrc('index.css')
-
-		// Use a nonce to only allow a specific script to be run.
-		const nonce = getNonce();
 
 		return `<!DOCTYPE html>
 			<html lang="en">
@@ -78,7 +97,8 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 				-->
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link nonce="${nonce}" href="${cssUri}" rel="stylesheet">
-				<title>Cat Colors</title>
+				<title>Van</title>
+				${injectedConfigScript}
 			</head>
 			<body>
 				<div id='app' data-vscode-context='${JSON.stringify({ preventDefaultContextMenuItems: true })}' ></div>

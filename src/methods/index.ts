@@ -1,11 +1,10 @@
-import { commands, DocumentSymbol, Position, TextDocument, Uri, workspace } from 'vscode';
+import { commands, ConfigurationChangeEvent, DocumentSymbol, Position, TextDocument, Uri, workspace } from 'vscode';
 import { isFormer } from '../../shared/utils';
-import { SDocNode } from '../../shared/var';
+import { configKeys, configMap, SDocNode } from '../../shared/var';
 import { vscode } from '../../front/util/var';
 import { LRUCache } from './lru-cache';
 import { timestamp } from '../../shared/message/event';
 
-workspace.registerFileSystemProvider;
 export const getText = (uri: Uri, start: Position, end: Position) => {};
 
 export const fromPos = (pos: Position) => {
@@ -113,4 +112,28 @@ export function updateDocCache(newDoc: TextDocument) {
 	// 不管有没有先缓存
 	// if(!docCache.has(path)) return;
 	docCache.set(path, newDoc);
+}
+
+
+export const getConfig = () => {
+  const conf = workspace.getConfiguration('Van');
+	return configKeys.reduce<Record<any, any>>((obj, key) => {
+		const rawValue = conf.get(key);
+		const handler = configMap[key];
+		obj[key] = handler.process(rawValue);
+		return obj;
+	}, {})
+}
+
+export const getChangedConf = (e: ConfigurationChangeEvent) => {
+	const conf = workspace.getConfiguration('Van');
+	const changed = configKeys.reduce((obj, key) => {
+		if(!e.affectsConfiguration(`Van.${key}`)) return obj;
+		const temp = obj || {};
+		const rawValue = conf.get(key);
+		const handler = configMap[key];
+		const value = handler.process(rawValue);
+		return  { ...temp, [key]: value}
+	}, undefined);
+	return changed as Record<any, any>|undefined;
 }
