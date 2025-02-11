@@ -1,0 +1,16 @@
+{
+	"pkg.config_title": "Van config",
+	"pkg.unlock": "unlock mode",
+	"pkg.half_lock": "half_lock mode",
+	"pkg.lock": "lock mode",
+	"pkg.unlock_desc": "single click to change references detail",
+	"pkg.half_lock_desc": "select symbol to change references detail",
+	"pkg.lock_desc": "lock current shown references",
+	"pkg.lock_mode_desc": "references - default lock mode",
+	"pkg.ignore_ref_file_desc": "references - default ignore files(glob)",
+	"pkg.outline_tag_desc": "outline - default shown symbol types",
+	"pkg.command_title_setting":"🕹setting",
+	"pkg.command_title_forward":"🤡forward👉️",
+	"pkg.command_title_backward":"👈️backward🤡",
+	"pkg.desc":"a guide for quick code reading"
+}

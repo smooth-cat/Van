@@ -130,7 +130,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
   const [run, reset] = useAsync(
     'refs',
     async function (uri, pos, kind: RefreshKind, isSelect = false) {
-      if (kind === RefreshKind.DocEdit) {
+      if (kind === RefreshKind.DocEdit || kind === RefreshKind.GotoLocationRefresh) {
       } else {
         // 有详情时，移动位置在包含在详情内则不需重新加载，只改变 激活位置即可
         const shouldRequest = modeHandler[data.lockType].call(this, uri, pos, kind, isSelect);
@@ -149,7 +149,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
         return { ...res.data, key: newKey };
       } else {
         if (ENV === 'dev') {
-          info('未找到任何引用!');
+          info(t('no reference found!'));
         }
         return this.value;
       }
@@ -245,6 +245,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 			RefreshKind.Mouse,
 			RefreshKind.BackOrForward,
 			RefreshKind.GotoLocation,
+			RefreshKind.GotoLocationRefresh,
 		].includes(kind);
 		shouldRefresh = normalCase;
 		// switch (data.lockType) {

@@ -1,7 +1,6 @@
 import { commands, ConfigurationChangeEvent, DocumentSymbol, Position, TextDocument, Uri, workspace } from 'vscode';
 import { isFormer } from '../../shared/utils';
-import { configKeys, configMap, SDocNode } from '../../shared/var';
-import { vscode } from '../../front/util/var';
+import { LockType, SDocNode, SymbolKind, SymbolMap } from '../../shared/var';
 import { LRUCache } from './lru-cache';
 import { timestamp } from '../../shared/message/event';
 
@@ -114,10 +113,49 @@ export function updateDocCache(newDoc: TextDocument) {
 	docCache.set(path, newDoc);
 }
 
+let _configMap
+export const createConfigMap = () => {
+	if(_configMap) return _configMap;
+	_configMap = {
+    IgnoreRefFile: {
+      process(v: string) {
+        return v.trim();
+      }
+    },
+    OutlineTags: {
+      dataMap: (() => {
+        const tagToEnum: Record<string, SymbolKind> = {};
+        for (const key in SymbolMap) {
+          const [tagName] = SymbolMap[key];
+          tagToEnum[tagName] = Number(key) as any;
+        }
+        return tagToEnum;
+      })(),
+      process(v: string[]) {
+        v = Array.from(new Set(v));
+        return v.map(it => this.dataMap[it]);
+      }
+    },
+    LockMode: {
+      dataMap: {
+        ['无锁模式(unlock mode)']: LockType.UnLock,
+        ['半锁模式(half_lock mode)']: LockType.HalfLock,
+        ['锁模式(lock mode)']: LockType.Lock
+      },
+      process(v: string) {
+        return this.dataMap[v];
+      }
+    }
+  };
+	return _configMap;
+}
 
 export const getConfig = () => {
   const conf = workspace.getConfiguration('Van');
-	return configKeys.reduce<Record<any, any>>((obj, key) => {
+	const rawLockMode = conf.get('LockMode');
+	console.log('rawLockMode', rawLockMode);
+	const configMap = createConfigMap();
+	return Object.keys(configMap).reduce<Record<any, any>>((obj, key) => {
 		const rawValue = conf.get(key);
 		const handler = configMap[key];
 		obj[key] = handler.process(rawValue);
@@ -127,7 +165,8 @@ export const getConfig = () => {
 
 export const getChangedConf = (e: ConfigurationChangeEvent) => {
 	const conf = workspace.getConfiguration('Van');
-	const changed = configKeys.reduce((obj, key) => {
+	const configMap = createConfigMap();
+	const changed = Object.keys(configMap).reduce((obj, key) => {
 		if(!e.affectsConfiguration(`Van.${key}`)) return obj;
 		const temp = obj || {};
 		const rawValue = conf.get(key);

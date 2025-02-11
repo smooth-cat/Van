@@ -1,8 +1,8 @@
 {
 	"name": "van",
 	"displayName": "Van",
-	"description": "a navigator for fast read code",
-	"version": "1.0.1",
+	"description": "%pkg.desc%",
+	"version": "1.0.5",
 	"publisher": "smooth-cat",
 	"private": true,
 	"license": "MIT",
@@ -14,7 +14,7 @@
 		"url": "https://github.com/smooth-cat/Van"
 	},
 	"engines": {
-		"vscode": "^1.50.0"
+		"vscode": "^1.97.0"
 	},
 	"extensionKind": [
 		"ui",
@@ -25,31 +25,32 @@
 	],
 	"activationEvents": [],
 	"main": "./dist-ext/extension.js",
+	"l10n": "./l10n",
 	"contributes": {
 		"configuration": {
-			"title": "Van 插件配置",
+			"title": "%pkg.config_title%",
 			"properties": {
 				"Van.LockMode": {
 					"type": "string",
 					"enum": [
-						"无锁模式",
-						"半锁模式",
-						"锁模式"
+						"无锁模式(unlock mode)",
+						"半锁模式(half_lock mode)",
+						"锁模式(lock mode)"
 					],
 					"enumDescriptions": [
-						"单击标识符切换引用详情",
-						"选中标识符切换引用详情",
-						"锁住当前引用详情"
+						"%pkg.unlock_desc%",
+						"%pkg.half_lock_desc%",
+						"%pkg.lock_desc%"
 					],
-					"default": "无锁模式",
-					"description": "引用详情-默认锁模式配置"
+					"default": "无锁模式(unlock mode)",
+					"description": "%pkg.lock_mode_desc%"
 				},
 				"Van.IgnoreRefFile": {
 					"type": "string",
 					"default": "node_modules",
-					"description": "引用详情-默认忽略文件(glob语法)"
+					"description": "%pkg.ignore_ref_file_desc%"
 				},
-				"Van.OutlineTag": {
+				"Van.OutlineTags": {
 					"type": "array",
 					"items": {
 						"type": "string",
@@ -110,7 +111,7 @@
 						"opr",
 						"type"
 					],
-					"description": "大纲-默认可见标识符类型"
+					"description": "%pkg.outline_tag_desc%"
 				}
 			}
 		},
@@ -142,17 +143,17 @@
 		"commands": [
 			{
 				"command": "Van.settings",
-				"title": "🕹设置",
+				"title": "%pkg.command_title_setting%",
 				"category": "Van"
 			},
 			{
 				"command": "Van.forward",
-				"title": "🤡前进👉️",
+				"title": "%pkg.command_title_forward%",
 				"category": "Van"
 			},
 			{
 				"command": "Van.backward",
-				"title": "👈️后退🤡",
+				"title": "%pkg.command_title_backward%",
 				"category": "Van"
 			}
 		],
@@ -194,7 +195,7 @@
 		"@rspack/core": "^1.1.3",
 		"@rspack/dev-server": "^1.0.9",
 		"@types/node": "^22.13.0",
-		"@types/vscode": "^1.50.0",
+		"@types/vscode": "^1.97.0",
 		"@typescript-eslint/eslint-plugin": "^4.16.0",
 		"@typescript-eslint/parser": "^4.16.0",
 		"@vscode/vsce": "2.27.0",

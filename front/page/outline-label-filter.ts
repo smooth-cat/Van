@@ -100,14 +100,14 @@ export const LabelFilter: FC<Data, Props> = (data, props) => {
           el(
             'div',
             {
-              ellipsisText: `...共${labels.size}项`,
+              ellipsisText: t('...{0}tags', labels.size+''),
               style: `--ellipsis-left: ${data.fixedPos.left};--ellipsis-top: ${data.fixedPos.top};`,
               class: `fixed-height-layer ${data.fixType}`
             },
             [
               el(
                 'div',
-                { ref: labelZoneRef, class: `labelZone ${labels.size === 0 ? 'placeholder' : ''}` },
+                { ref: labelZoneRef, class: cNames('labelZone', {placeholder: labels.size === 0}), placeholder: t('choose visible type')},
                 renderSelected()
               )
             ]
@@ -115,14 +115,14 @@ export const LabelFilter: FC<Data, Props> = (data, props) => {
         ]),
         el('div', { class: 'labelDropdown' }, [
           el('div', { class: 'titleSelectAll' }, [
-            el('div', { class: 'title' }, [text('可见类型')]),
+            el('div', { class: 'title' }, [text(t('Visible Type'))]),
             el('div', { class: 'labelItem selectAll', onclick: selectAll }, [
               el('div', { class: 'selected', style: `opacity: ${isAllSelected() ? '1' : '0'}` }, [
                 fn(Icon, { i: iTick, size: 12 })
               ]),
-              el('div', { class: 'label' }, [text('全选')])
+              el('div', { class: 'label' }, [text(t('All'))])
             ]),
-						el('div', { class: 'label default', onclick: setToDefault }, [text('默认')])
+						el('div', { class: 'label default', onclick: setToDefault }, [text(t('Default'))])
           ]),
           el(
             'div',

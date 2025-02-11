@@ -31,9 +31,12 @@
 
 3. 忽略功能
    1. 🧹 模式，点击 引用项/文件 忽略该引用。**Esc** 退出模式
-   2. 忽略文件
+   2. 忽略文件，glob 语法，默认为 node_modules
 
    <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/clean.png?raw=true" width="700" />
+   
+4. 上层调用函数跳转，hover 单个引用项的行号，可以查看上层调用函数，点击弹出框可以跳转。
+   <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/ref-upper.png?raw=true" width="700" />
 
 ### 代码大纲
 
@@ -48,48 +51,53 @@
 
 <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/setting.png?raw=true" width="700" />
 
+[中文](#van-插件) &nbsp;[English](#van-plugin)
 # Van Plugin
-Provides programming navigation with features like **Real-time Reference Display** and **Code Outline**.
+
+For programming navigation, providing **real-time reference display**, **code outline** and other features.
 
 If this plugin helps you, please give it a good review 😝 Happy coding ~
 
 ## Usage
 
-1. After installation, drag the Van plugin icon from the left toolbar to the right side of the editor to keep it in the right sidebar.
+1. After installation, drag the Van plugin icon from the left toolbar to the right side of the editor to keep it permanently in the right sidebar.
 
-2. If you don't see the right sidebar, click the "Show Right Sidebar" button in the top-right corner of VSCode.
+2. If the right sidebar is not visible, click the "Show Right Sidebar" button in the upper right corner of VS Code.
 
 <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/right-sidebar.png?raw=true" width="700" />
 
 ### Real-time Reference Display
 
-1. Click any identifier in your code, and Van will automatically display all references and definitions for that identifier
+1. Click any identifier in the code, and Van will automatically display all references and definitions of that identifier.
 
    <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/detail.png?raw=true" width="700" />
 
-2. Three reference display modes:
-   1. Lock-free Mode: Switch reference display by **clicking** identifiers
-   2. Semi-locked Mode: Switch reference display through **selection**
-   3. Locked Mode: Keep current references locked
-   4. Press **F12** to toggle between Lock-free and Locked modes
+2. Three Reference Viewing Modes:
+   1. **No Lock Mode**: Switch reference displays by **clicking** identifiers
+   2. **Semi-Lock Mode**: Switch reference displays by **selecting** identifiers
+   3. **Lock Mode**: Lock the current reference display
+   4. Press **F12** to toggle between **No Lock** and **Lock** modes
 
    <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/lock-type.png?raw=true" width="700" />
 
-3. Ignore features
-   1. 🧹 Clean Mode: Click references/files to ignore them. **Press Esc** to exit the mode
-   2. Ignore Files
+3. Ignore Functionality
+   1. 🧹 **Clean Mode**: Click reference items/files to ignore them. Press **Esc** to exit
+   2. Ignored files using glob syntax (default: node_modules)
 
    <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/clean.png?raw=true" width="700" />
+   
+4. Jump to the upper level calling function, hover over the line number of a single reference item, you can see the upper level calling function, click the pop-up box to jump.
+   <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/ref-upper.png?raw=true" width="700" />
 
 ### Code Outline
 
 1. Filter identifiers by type
-2. Name search (use @ prefix for case-sensitive search)
+2. Name search (case-sensitive when starting with @)
 
 <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/outline.png?raw=true" width="700" />
 
-### Open Setting
+### Open Configuration
 
-1. Right click in the plugin and select from the menu “🕹配置项” option can open the configuration
+1. Right-click in the plugin panel and select "🕹Setting" from the menu to open configurations
 
 <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/setting.png?raw=true" width="700" />

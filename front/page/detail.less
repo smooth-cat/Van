@@ -354,3 +354,22 @@
 		}
 	}
 }
+
+.popup-upper {
+	display: flex;
+	align-items: center;
+	&.can-click {
+		cursor: pointer;
+	}
+	.label {
+		transform-origin: 0 50%;
+		transform: scale(0.8);
+	}
+	.name {
+		margin-left: -4px;
+		margin-top: -2px;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+}

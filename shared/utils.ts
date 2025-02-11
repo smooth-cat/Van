@@ -1,5 +1,5 @@
 import { Position } from "vscode";
-import { IRange, Uri } from "./var";
+import { DocNode, IRange, Uri } from "./var";
 
 export const pick = <T extends Record<any, any>>(t: T, keys: (keyof T)[]) => {
 	let obj: any = {};
@@ -167,4 +167,23 @@ export function lastFit<T>(arr: T[], fit: (midV: T) => boolean) {
     }
   }
   return start;
+}
+
+export function searchUpperSymbol(symbols: DocNode[], lead: Position, tail: Position) {
+	let start = 0;
+	let end = symbols.length - 1;
+	while (start <= end) {
+		const mid = (start + end) >> 1;
+		const midV = symbols[mid].range;
+		if(isFormer(midV[0], lead, true) && isFormer(tail, midV[1], true)) {
+			return mid;
+		}
+		// 起始位置在末尾位置后，则 start 缩进
+		if(isFormer(midV[1], lead)) {
+			start = mid + 1;
+		} else {
+			end = mid - 1;
+		}
+	}
+	return -1;
 }

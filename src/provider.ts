@@ -75,9 +75,11 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 		const nonce = getNonce();
 
 		const conf = JSON.stringify(getConfig());
+		const translateObj = JSON.stringify(vscode.l10n.bundle || {});
 		console.log('conf', conf);
+		console.log('translateObj', translateObj);
 		
-		const injectedConfigScript = `<script nonce="${nonce}">window['conf']=${conf}</script>`;
+		const injectVar = `<script nonce="${nonce}">window['conf']=${conf};window['translateObj']=${translateObj}</script>`;
 		// const injectedConfigScript = ``;
 		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 		const scriptUri = this.getSrc('index.js');
@@ -98,7 +100,7 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link nonce="${nonce}" href="${cssUri}" rel="stylesheet">
 				<title>Van</title>
-				${injectedConfigScript}
+				${injectVar}
 			</head>
 			<body>
 				<div id='app' data-vscode-context='${JSON.stringify({ preventDefaultContextMenuItems: true })}' ></div>

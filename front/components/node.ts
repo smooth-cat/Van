@@ -25,7 +25,7 @@ export const Node: FC<Data, Props> = (data, props) => {
       value: { selectionRange },
       uri
     } = props;
-    msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(selectionRange[0]), showDetail]);
+    msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(selectionRange[0]), showDetail, false]);
   };
 
 	const clickSymbolName = () => {

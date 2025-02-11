@@ -1,0 +1,25 @@
+.popup-wrapper {
+	position: fixed;
+	z-index: 99999;
+	.popup-content {
+		border: 1px solid var(--cg-border);
+		background-color: var(--cg-bg);
+		border-radius: 2px;
+		padding: 1px 3px;
+		animation: popup .2s;
+	}
+}
+.popup-wrapper.popup-content {
+	width: fit-content;
+	height: fit-content;
+}
+
+
+@keyframes popup {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}

@@ -18,3 +18,11 @@ export const useComputed = <T>(getter: () => T, deps: string[]) => {
 	});
 	return computeValue;
 }
+
+export const useRef = () => {
+	let dom: HTMLElement;
+	function ref(d) {
+		dom = d;
+	}
+	return [() => dom, ref] as const;
+}

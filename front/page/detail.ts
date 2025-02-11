@@ -17,7 +17,7 @@ import { useVerify } from '../hook/use-verify';
 import { Minimatch } from 'minimatch';
 import { useDebounceValue } from '../hook/use-debounce-value';
 import { getRelativePath } from '../../shared/utils';
-import { useComputed } from '../runtime/use-computed';
+import { useComputed } from '../runtime/build-in-hook';
 import { useConfig } from '../hook/use-defualt';
 
 export type IActive = {
@@ -237,14 +237,14 @@ export const Detail: FC<Data, Props> = (data, props) => {
           el('div', { class: 'title' }, [
             fn(Tooltip, {
               els: [fn(Icon, { i: iPrevious, size: 18, onclick: close })],
-              tip: '退后',
+              tip: t('close'),
               type: 'bottom',
               class: 'previous'
             }),
             el('div', { class: cNames('tools', { expanded: data.expand }) }, [
               fn(Tooltip, {
                 els: [fn(Icon, { i: iTool, size: 18, onclick: toggleTools })],
-                tip: data.expand ? '收起工具栏' : '展开工具栏',
+                tip: t(data.expand ? 'collapse tools' : 'expand tools'),
                 type: 'bottom',
                 class: 'tool-icon'
               }),
@@ -261,7 +261,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
                         onclick: () => update(LockType.UnLock)
                       })
                     ],
-                    tip: '无锁模式(F12)',
+                    tip: `${t('unlock mode')}(F12)`,
                     type: 'bottom',
 										class: cNames('iUnlock', { active: verify(LockType.UnLock) }),
                   }),
@@ -273,7 +273,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
                         onclick: () => update(LockType.HalfLock)
                       })
                     ],
-                    tip: '半锁模式(F12)',
+                    tip: `${t('half_lock mode')}(F12)`,
                     type: 'bottom',
 										class: cNames({ active: verify(LockType.HalfLock) }),
                   }),
@@ -285,7 +285,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
                         onclick: () => update(LockType.Lock)
                       })
                     ],
-                    tip: '锁模式(F12)',
+                    tip: `${t('lock mode')}(F12)`,
                     type: 'bottom',
 										class: cNames({ active: verify(LockType.Lock) }),
                   }),
@@ -297,7 +297,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
 												onclick: toggleEnableClear,
                       })
                     ],
-                    tip: data.clearable ? '排除工具(Esc)' : '排除工具',
+                    tip: data.clearable ? `${t('exclude tool')}(Esc)` : t('exclude tool'),
                     type: 'bottom',
 										class: cNames('clearable-btn', { active: data.clearable }), 
                   }),
@@ -309,18 +309,18 @@ export const Detail: FC<Data, Props> = (data, props) => {
                         onclick: cancelClear,
                       })
                     ],
-                    tip: '恢复删除项',
+                    tip: t('recover excluded'),
                     type: 'bottom',
 										class: 'active cancel-btn'
                   }),
 									fn(Tooltip, {
                     els: [el('div', { class: 'plus-icon', onclick: expandFolder })],
-                    tip: '全部展开',
+                    tip: t('expand all'),
                     type: 'bottom'
                   }),
                   fn(Tooltip, {
                     els: [el('div', { class: 'dec-icon', onclick: closeFolder })],
-                    tip: '全部折叠',
+                    tip: t('collapse all'),
                     type: 'bottom'
                   }),
                 ]
@@ -328,7 +328,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
             ]),
             el('div', { title: define.name, class: 'title-name' }, [text(define.name)])
           ]),
-          fn(Input, { value: data.search, onChange, placeholder: '输入要忽略文件，glob 语法' })
+          fn(Input, { value: data.search, onChange, placeholder: t('input ignore files(glob)') })
         ]),
         showDefine &&
           el('div', { class: 'define' }, [

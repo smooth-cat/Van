@@ -30,7 +30,7 @@ export const OutlineSearch: FC<Data, Props> = (data, props) => {
 		const { value, updateSearch } = props;
 		return [
 			el('div', { class: 'outlineSearch' }, [
-				fn(Input, { placeholder: '搜索 @开头大小写敏感', value, onChange: updateSearch }),
+				fn(Input, { placeholder: t('search, @xxx => case sensitive'), value, onChange: updateSearch }),
 				el('div', { class: `tools` }, [
 						fn(Icon, { class: 'expand',key: 'expand', i: iDbExp, size: 12, onclick: shrink }),
 						fn(Icon, { class: 'shrink',key: 'shrink', i: iDbExp, size: 12, onclick: expand }),

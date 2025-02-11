@@ -11,6 +11,7 @@ export type WithEvent = {
 
 export const callComponent = <T extends FC<any, WithEvent>>(type: T,  props: Record<any, any>) => {
 	function destroy() {
+		event.emit('will-destroy');
 		if(root) {
 			unmount(root);
 		}

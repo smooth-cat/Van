@@ -28,7 +28,7 @@ type Data = {
 };
 
 export const Outline: FC<Data, Props> = (data, props) => {
-	useConfig('defaultLabels', 'OutlineTag');
+	useConfig('defaultLabels', 'OutlineTags');
   data.showLabels = new Set([
     ...data.defaultLabels
   ]);
@@ -148,13 +148,13 @@ export const Outline: FC<Data, Props> = (data, props) => {
       el('div', { class: 'outline' }, [
         fn(LabelFilter, { labels: data.showLabels, defaultLabels: data.defaultLabels }),
         fn(OutlineSearch, { value: data.search, updateSearch }),
-				data.hasRepeat && el('div', { class: 'hasRepeat',  key: 'hasRepeat', title: '关闭(不再提示)', onclick: closeRepeat }, [
-					text('检测到标识符重复，本文件可能被多个语言插件解析！')
+				data.hasRepeat && el('div', { class: 'hasRepeat',  key: 'hasRepeat', title: t('close(not show again)'), onclick: closeRepeat }, [
+					text(t('Duplicate identifiers detected, this file may be parsed by multiple language plugins!'))
 				]),
         el('div', { class: 'tree hide-scrollbar' }, [
           tree.loading
             ? fn(Loading)
-            : !tree.value?.length 
+            : !filteredTree.value?.length 
 							? el('img', { class: 'loading-img', src: Empty })
 							: el(
                 'div',

@@ -110,7 +110,7 @@ export async function fetchSymbol(uri: Uri) {
     console.log('当前活动文件symbols', res);
 		const gotResult = { hasRepeat, symbols: res as SDocNode[]};
 		// 长度为0的可能是未成功Fetch的
-		if(res.length !== 0) {
+		if(!!res?.length) {
 			symbolCache.set(uri.path, gotResult);
 		}
     return gotResult
@@ -171,7 +171,6 @@ export const fixNode = [
       if (node.kind === SymbolKind.Property) {
         if (parent?.kind === SymbolKind.Class) {
           const suffixRange = new Range(node.selectionRange.end, node.range.end);
-          node.kind = SymbolKind.Function;
           let suffixCode = doc.getText(suffixRange);
           const i = suffixCode.indexOf('=');
           if (i === -1) return;

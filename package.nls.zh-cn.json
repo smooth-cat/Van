@@ -1,0 +1,16 @@
+{
+	"pkg.config_title": "Van 插件配置",
+	"pkg.unlock": "无锁模式",
+	"pkg.half_lock": "半锁模式",
+	"pkg.lock": "锁模式",
+	"pkg.unlock_desc": "单击标识符切换引用详情",
+	"pkg.half_lock_desc": "选中标识符切换引用详情",
+	"pkg.lock_desc": "锁住当前引用详情",
+	"pkg.lock_mode_desc": "引用详情-默认锁模式配置",
+	"pkg.ignore_ref_file_desc": "引用详情-默认忽略文件(glob语法)",
+	"pkg.outline_tag_desc": "大纲-默认可见标识符类型",
+	"pkg.command_title_setting":"🕹设置",
+	"pkg.command_title_forward":"🤡前进👉️",
+	"pkg.command_title_backward":"👈️后退🤡",
+	"pkg.desc": "一个快速的代码导航插件"
+}

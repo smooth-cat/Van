@@ -7,6 +7,7 @@ export type Uri = RawUri & {
   expand: boolean;
 	showMore: boolean;
   scroll?: { id: number };
+	symbols?: DocNode[];
 };
 
 export enum MsgType {
@@ -106,6 +107,7 @@ export enum RefreshKind {
 
   BackOrForward = 'BackOrForward',
   GotoLocation = 'GotoLocation',
+  GotoLocationRefresh = 'GotoLocationRefresh',
   DocEdit = 'DocEdit'
 }
 
@@ -346,37 +348,3 @@ export const SymbolMap = {
 		};
 	}
 })();
-
-export const configMap = {
-	IgnoreRefFile: {
-		process(v: string) {
-			return v.trim()
-		}
-	},
-	OutlineTag : {
-		dataMap: (() => {
-			const tagToEnum: Record<string, SymbolKind> = {};
-			for (const key in SymbolMap) {
-				const [tagName] = SymbolMap[key];
-				tagToEnum[tagName] = Number(key) as any;
-			}
-			return tagToEnum;
-		})(),
-		process(v: string[]) {
-			v = Array.from(new Set(v));
-			return v.map((it) => this.dataMap[it])
-		}
-	},
-	 LockMode: {
-		dataMap: {
-			'无锁模式': LockType.UnLock,
-			'半锁模式': LockType.HalfLock,
-			'锁模式': LockType.Lock,
-		},
-		process(v: string) {
-			return this.dataMap[v];
-		}
-	 }
-};
-
-export const configKeys = Object.keys(configMap);
