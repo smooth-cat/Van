@@ -1,7 +1,7 @@
 import { dfs, dfsFiber, loopParent } from './dfs';
 import { el, fn, IEl, train } from './el';
 import { Component } from './fc';
-import { getVar } from './global';
+import { getVar, setVar } from './global';
 import { getMaxInc } from './max-inc';
 import { addPatchBag, PatchBag, PatchType } from './patch';
 import { Func } from './type';
@@ -353,8 +353,14 @@ export const nodeOpr = {
   assign(a: IEl, b: IEl) {
     ['type', 'props', 'data'].forEach(k => (a[k] = b[k]));
   },
-  cloneFCNode(prev: IEl, props?: any) {
-		const newNode = fn(prev.$type as Func, props ?? prev.props);
+  cloneFCNode(prev: IEl, newType?: Func) {
+		if(prev.owner) {
+			setVar('curRenderFC', prev.owner);
+		}
+		const newNode = fn(newType || prev.$type as Func, prev.props);
+		if(prev.owner) {
+			setVar('curRenderFC', null);
+		}
     return newNode;
   },
   tagKey(el: IEl) {
@@ -525,6 +531,14 @@ export const nodeOpr = {
 		if(parent != null && childI != null) {
 			curr.index = childI;
 			const children = parent.$children;
+			// 这个操作在 diff 之后，如果在 diff 中要获取 owner 则需要在 diff 前做好 owner 链
+			// const prev =  children[childI];
+			// 替换后新节点丢失了 owner 导致无法向上
+			// if(prev.owner) {
+			// 	curr.owner = prev.owner;
+			// 	curr.level = prev.level;
+			// }
+
 			children[childI] = curr;
 			curr.parent = parent;
 

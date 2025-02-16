@@ -59,11 +59,11 @@ export class Component {
 
 	handleRender = (render: Func) => {
 		const effect = new ReactiveEffect((...args: any[]) => {
-			setVar("curRenderFC", this);
+			setVar('curRenderFC', this);
 			const res = render(...args);
 			this.el.$children = res;
 			train(this.el);
-			setVar("curRenderFC", null);
+			setVar('curRenderFC', null);
 		});
 
 		effect.scheduler = () => {

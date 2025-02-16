@@ -32,7 +32,7 @@ export function useHmr() {
 		}
 	
 		replaceCouples.forEach(([prev, newType]) => {
-			const hmrNode = fn(newType, prev.props);
+			const hmrNode = nodeOpr.cloneFCNode(prev, newType)
 			const parent = prev.parent;
 			// 先将新节点放到 虚拟树中
 			nodeOpr.replaceNode(parent, prev.index, hmrNode);
