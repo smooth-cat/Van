@@ -339,17 +339,36 @@ export const nodeOpr = {
 		}
 	},
 	setDomStyle(dom: HTMLElement, value: string) {
-		value.split(';').forEach((str) => {
-			let [key, styleValue] = str.split(':');
-			if(key == null || styleValue == null) return;
+    // 处理空值情况
+    if (!value || typeof value !== 'string') {
+      dom.removeAttribute('style');
+      return;
+    }
 
-			key = key.trim();
-			styleValue = styleValue.trim();
-			if(key && styleValue) {
-				dom.style.setProperty(key, styleValue);
-			}
-		})
-	},
+    // 清除之前的样式
+    dom.removeAttribute('style');
+
+    const styles = value.trim().split(';');
+    
+    styles.forEach(style => {
+      if (!style) return;
+      
+      const firstColonI = style.indexOf(':');
+      if (firstColonI === -1) return;
+
+      const key = style.slice(0, firstColonI).trim();
+      const styleValue = style.slice(firstColonI + 1).trim();
+
+      // 检查属性名和值是否合法
+      if (key && styleValue) {
+        try {
+          dom.style.setProperty(key, styleValue);
+        } catch (e) {
+          console.warn(`Invalid style property: ${key}: ${styleValue}`);
+        }
+      }
+    });
+  },
   assign(a: IEl, b: IEl) {
     ['type', 'props', 'data'].forEach(k => (a[k] = b[k]));
   },
