@@ -205,7 +205,7 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 											[fn(Popup, {
 												type: 'top-left',
 												offset: {
-													x: 10
+													x: (rect: DOMRect) => rect.width / 3.1
 												},
 												el: el('div', { style: 'width: 100%;' }, [text(isDefine ? DefineTag : it.range[0].line + 1)]),
 												renderer: ({ destroy }) => renderUpper(it, destroy)

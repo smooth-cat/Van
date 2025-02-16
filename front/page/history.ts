@@ -101,8 +101,10 @@ export const HistoryWrapper: FC<Data, Props> = (data, props) => {
 
 	const wHandle= watch(() => store.cursor, (value) => {
 		const { i, j } = value;
-		const uri = store.historyList[i].uri;
-		const ref = store.historyList[i].refs[j];
+		const uri = store.historyList[i]?.uri;
+		const ref = store.historyList[i]?.refs?.[j];
+		if(!uri || !ref) return;
+
 			// TODO: 考虑详情是否需要更新
 			msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(ref.range[0]), { triggerEvent: true, forceRefresh: true, addHistory: false }]);
 	});
@@ -182,7 +184,8 @@ export const History: FC<Data, Props> = (data, props) => {
 	}
 
 	function deleteAll() {
-		store.historyList = []
+		store.historyList = [];
+		store.cursor = { i: 0, j: 0}
 	}
 
 	close['bubble'] = BubbleLevel.History;

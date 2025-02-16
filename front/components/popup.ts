@@ -8,10 +8,13 @@ import './popup.less';
 export type RendererProps = {
 	event: BaseEvent, destroy: () => void
 }
+
+type OffsetFn = (rect: DOMRect) => number;
+
 export type Props = WithEvent & {
 	renderer: (rendererProps: RendererProps) => IEl[],
 	type?: 'top'|'top-left'|'top-right'|'bottom'|'bottom-left'|'bottom-right'| 'left'|'left-top'|'left-bottom'|'right'|'right-top'|'right-bottom',
-	offset?: {x?: number, y?: number},
+	offset?: {x?: number | OffsetFn, y?: number | OffsetFn},
 	target?: HTMLElement,
 }
 type Data = {
@@ -25,10 +28,15 @@ function numberWithSign(value: number) {
 export const Modal: FC<Data, Props> = (data, props) => {
 
 	const { target, event:e, destroy, offset={} } = props;
-	const {x=0,y=0} = offset;
+	const rect = target.getBoundingClientRect();
+	const { top, left, right, bottom, width, height } = rect;
+	offset.x = offset.x ?? 0;
+	offset.y = offset.y ?? 0;
+	const x = typeof offset.x === 'number' ? offset.x : offset.x(rect);
+	const y = typeof offset.y === 'number' ? offset.y : offset.y(rect);
+
 	const offX = numberWithSign(x);
 	const offY = numberWithSign(y);
-	const { top, left, right, bottom, width, height } = target.getBoundingClientRect();
 	const [d, ref] = useRef();
 
 	console.log({ offX,
