@@ -364,7 +364,7 @@ export const nodeOpr = {
     return newNode;
   },
   tagKey(el: IEl) {
-    return `${el.$type}.${el.props.key}.${el.props.ref || ''}`;
+    return `${el.$type}.${el.props.key ?? ''}.${el.props.ref || ''}`;
   },
   isEq(a: IEl, b: IEl) {
     return this.tagKey(a) === this.tagKey(b);
@@ -447,9 +447,13 @@ export const nodeOpr = {
 
     /*----------------- 3. 增删移混合处理 -----------------*/
     const prevKeyMap = new Map<ElKey, number>();
+		const delI = new Set<number>();
     for (let i = startI; i <= endI1; i++) {
       const prevItem = prevList[i];
-      prevKeyMap.set(this.tagKey(prevItem), i);
+			const itemKey = this.tagKey(prevItem);
+			delI.add(i);
+			if(prevKeyMap.has(itemKey)) continue;
+      prevKeyMap.set(itemKey, i);
     }
 
     let minPrevIInCurr = Infinity;
@@ -476,8 +480,8 @@ export const nodeOpr = {
       // 构建 alternate
       this.alternate(currItem, prevList[prevI]);
 
-      // prevKeyMap 剩余项为删除项
-      prevKeyMap.delete(key);
+      // 被复用的i，不需要记录删除
+      delI.delete(prevI);
 
       // 移动 保持 min 最小
       if (prevI < minPrevIInCurr) {
@@ -490,7 +494,7 @@ export const nodeOpr = {
     }
 
     if (!hasMove) {
-      patchMixDel(patcher, prevKeyMap, prevList);
+      patchMixDel(patcher, delI, prevList);
       addPatchBag(patcher);
       return;
     }
@@ -523,7 +527,7 @@ export const nodeOpr = {
 			patcher.patch(PatchType.Move, currItem);
     }
 
-    patchMixDel(patcher, prevKeyMap, prevList);
+    patchMixDel(patcher, delI, prevList);
     addPatchBag(patcher);
   },
 	replaceNode(parent: IEl|undefined, childI: number|undefined, curr: IEl) {
@@ -572,13 +576,10 @@ function patchPureDel(patcher, prevList, start, end) {
 	}
 }
 
-function patchMixDel(patcher, prevKeyMap, prevList) {
-	prevKeyMap.forEach(prevI => {
-		const it = prevList[prevI];
-		// 假设删除的同时还修改了内部的 data，就可以通过这个标志不触发渲染
-		// it.willDestroy = true;
-		patcher.patch(PatchType.Del, it);
-	});
+function patchMixDel(patcher, delI: Set<number>, prevList) {
+	delI.forEach((i) => {
+		patcher.patch(PatchType.Del, prevList[i]);
+	})
 }
 
 // 通过
