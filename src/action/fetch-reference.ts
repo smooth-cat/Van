@@ -130,6 +130,8 @@ const handleDefine = async (dif: (Location | LocationLink)[]) => {
     ...getText(doc, loc.range),
     declaration,
 		symbolKey,
+		miss: false,
+		delta: 0
   };
 };
 

@@ -30,7 +30,7 @@ module.exports = {
   },
 	optimization: {
     minimize: process.env.ENV !== 'dev',
-		minimizer: [
+		minimizer: process.env.ENV !== 'dev' ? [
 			new rspack.SwcJsMinimizerRspackPlugin({
 				minimizerOptions: {
 					compress: {
@@ -40,7 +40,7 @@ module.exports = {
 				},
 			}),
 			new rspack.LightningCssMinimizerRspackPlugin()
-		]
+		] : undefined
   },
 	experiments: {
     css: true,

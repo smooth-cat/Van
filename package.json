@@ -2,7 +2,7 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "%pkg.desc%",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"publisher": "smooth-cat",
 	"private": true,
 	"license": "MIT",
@@ -112,16 +112,14 @@
 						"type"
 					],
 					"description": "%pkg.outline_tag_desc%"
+				},
+				"Van.HistoryMaxLength": {
+					"type": "number",
+					"default": 15,
+					"description": "%pkg.max_history_len_desc%"
 				}
 			}
 		},
-		"keybindings": [
-			{
-				"command": "Van.lockMode",
-				"key": "f12",
-				"when": "editorTextFocus"
-			}
-		],
 		"viewsContainers": {
 			"activitybar": [
 				{
@@ -140,10 +138,34 @@
 				}
 			]
 		},
+		"keybindings": [
+			{
+				"command": "Van.toggle_lock_mode",
+				"key": "alt+2"
+			},
+			{
+				"command": "Van.exit_current",
+				"key": "escape"
+			},
+			{
+        "command": "Van.history",
+        "key": "alt+1"
+      }
+		],
 		"commands": [
 			{
-				"command": "Van.settings",
-				"title": "%pkg.command_title_setting%",
+				"command": "Van.toggle_lock_mode",
+				"title": "%pkg.command_title_toggle_lock_mode%",
+				"category": "Van"
+			},
+			{
+				"command": "Van.exit_current",
+				"title": "%pkg.command_title_exit_current%",
+				"category": "Van"
+			},
+			{
+				"command": "Van.history",
+				"title": "%pkg.command_title_history%",
 				"category": "Van"
 			},
 			{
@@ -155,21 +177,44 @@
 				"command": "Van.backward",
 				"title": "%pkg.command_title_backward%",
 				"category": "Van"
+			},
+			{
+				"command": "Van.settings",
+				"title": "%pkg.command_title_setting%",
+				"category": "Van"
+			},
+			{
+				"command": "Van.shortcuts",
+				"title": "🚀快捷键",
+				"category": "Van"
 			}
 		],
 		"menus": {
 			"webview/context": [
 				{
-					"command": "Van.settings",
-					"when": "webviewId == 'Van'"
+					"command": "Van.history",
+					"when": "webviewId == 'Van'",
+					"group": "Van@1"
 				},
 				{
 					"command": "Van.forward",
-					"when": "webviewId == 'Van'"
+					"when": "webviewId == 'Van'",
+					"group": "Van@2"
 				},
 				{
 					"command": "Van.backward",
-					"when": "webviewId == 'Van'"
+					"when": "webviewId == 'Van'",
+					"group": "Van@3"
+				},
+				{
+					"command": "Van.settings",
+					"when": "webviewId == 'Van'",
+					"group": "Van@4"
+				},
+				{
+					"command": "Van.shortcuts",
+					"when": "webviewId == 'Van'",
+					"group": "Van@4"
 				}
 			]
 		}

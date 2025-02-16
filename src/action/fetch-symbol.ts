@@ -1,6 +1,6 @@
 import { commands, DocumentSymbol, TextDocument, TextEditor, Uri, window, workspace, Range, Position } from 'vscode';
 import { dfs, isFormer, lastFit, pick } from '../../shared/utils';
-import { DocNode, SDocNode, SymbolKind } from '../../shared/var';
+import { DocNode, Err, SDocNode, SymbolKind } from '../../shared/var';
 import { openDocument, retryGetSymbols } from '../methods';
 import { LRUCache } from '../methods/lru-cache';
 export type FetchSymbolRes = {
@@ -11,10 +11,16 @@ export const symbolCache = new LRUCache<string, FetchSymbolRes>(100);
 
 export async function fetchSymbol(uri: Uri) {
   uri = uri ?? window.activeTextEditor?.document?.uri;
+	
   if (!uri) {
-    console.log('当前无打开的文件');
+		console.log('当前无打开的文件');
     return { hasRepeat: false, symbols: [] as SDocNode[]};
   }
+	
+	if(uri.scheme !== 'file') {
+		throw Err.CantGetSymbolInNonFile;
+	}
+
 
 	if(symbolCache.has(uri.path)) {
 		return symbolCache.get(uri.path);

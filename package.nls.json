@@ -9,8 +9,13 @@
 	"pkg.lock_mode_desc": "references - default lock mode",
 	"pkg.ignore_ref_file_desc": "references - default ignore files(glob)",
 	"pkg.outline_tag_desc": "outline - default shown symbol types",
-	"pkg.command_title_setting":"🕹setting",
-	"pkg.command_title_forward":"🤡forward👉️",
-	"pkg.command_title_backward":"👈️backward🤡",
+	"pkg.command_title_setting":"🕹Setting",
+	"pkg.command_title_shortcuts":"🚀shortcut keys",
+	"pkg.command_title_history":"🎦History",
+	"pkg.command_title_toggle_lock_mode":"🔐Switch lock mode",
+	"pkg.command_title_exit_current":"❌Exit drawer | mode",
+	"pkg.command_title_forward":"🤡Forward👉️",
+	"pkg.command_title_backward":"👈️Backward🤡",
+	"pkg.max_history_len_desc":"history - maximum number of historical record file entries stored",
 	"pkg.desc":"a guide for quick code reading"
 }

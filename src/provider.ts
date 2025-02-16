@@ -2,19 +2,20 @@ import * as vscode from 'vscode';
 import { Message } from '../shared/message';
 import { MsgType } from '../shared/var';
 import { getConfig } from './methods';
+import { getDefaultBindingKey, watchBind } from './methods/hack-keybind';
 export class NavViewProvider implements vscode.WebviewViewProvider {
 
 	private _view?: vscode.WebviewView;
 
 	constructor(
-		private readonly _extensionUri: vscode.Uri,
-		private readonly extCtx: vscode.ExtensionContext,
+		public _extensionUri: vscode.Uri,
+		public extCtx: vscode.ExtensionContext,
 		public onResolved?: (self: NavViewProvider) => void,
 	) { }
 
 	disposes: vscode.Disposable[] = [];
 
-	public resolveWebviewView(
+	public async resolveWebviewView(
 		webviewView: vscode.WebviewView,
 		context: vscode.WebviewViewResolveContext,
 		_token: vscode.CancellationToken,
@@ -25,42 +26,45 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 		const { webview } = webviewView;
 
 		webview.options = {
-			// Allow scripts in the webview
 			enableScripts: true,
-
 			localResourceRoots: [
 				this._extensionUri
 			]
 		}; 
 		
 		webview.html = this._getHtmlForWebview(webview);
+		/*----------------- 插件在后台不会响应 配置变化，每次显示都刷新一下 -----------------*/
 		this.disposes.push(
-			webviewView.onDidChangeVisibility(() => {
+			webviewView.onDidChangeVisibility(async() => {
+				console.log('onDidChangeVisibility');
 				if(webviewView.visible) {
 					webview.html = this._getHtmlForWebview(webview);
 				}
 			})
-		)
+		);
+
+		/*----------------- 绑定变化 -----------------*/
+		watchBind(this);
+
+		/*----------------- 通信中心 -----------------*/
 		this.msg = new Message(
 			(msg) => { console.log('编辑器事件', msg);
 			 webview.postMessage(msg)} ,
 			(fn) => this.disposes.push(webview.onDidReceiveMessage((msg) => fn(msg))),
 		);
-		const msgDisposable = new vscode.Disposable(() => this.msg.clear());
-		this.disposes.push(msgDisposable);
 
-		this.extCtx.subscriptions.push(...this.disposes);
-
-		this.msg.on(MsgType.Reload, () => {
-			console.log('收到reload');
+		/*----------------- 刷新页面 -----------------*/
+		this.msg.on(MsgType.Reload, async() => {
 			webview.html = this._getHtmlForWebview(webview);
 		})
 
+		const msgDisposable = new vscode.Disposable(() => this.msg.clear());
+		this.disposes.push(msgDisposable);
+		this.extCtx.subscriptions.push(...this.disposes);
 		this.onResolved?.(this);
 	}
 
 	msg: Message = {} as any;
-
 
 	private getSrc = (path: string) => {
 		// @ts-ignore
@@ -73,13 +77,15 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 	private _getHtmlForWebview(webview: vscode.Webview) {
 		// Use a nonce to only allow a specific script to be run.
 		const nonce = getNonce();
-
+		const keyBind = getDefaultBindingKey(this);
+		this.extCtx.subscriptions.push()
 		const conf = JSON.stringify(getConfig());
 		const translateObj = JSON.stringify(vscode.l10n.bundle || {});
+		const keyBindObj = JSON.stringify(keyBind || {});
 		console.log('conf', conf);
 		console.log('translateObj', translateObj);
-		
-		const injectVar = `<script nonce="${nonce}">window['conf']=${conf};window['translateObj']=${translateObj}</script>`;
+		console.log('keyBindObj', keyBindObj);
+		const injectVar = `<script nonce="${nonce}">window['conf']=${conf};window['translateObj']=${translateObj};window['keyBindObj']=${keyBindObj}</script>`;
 		// const injectedConfigScript = ``;
 		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 		const scriptUri = this.getSrc('index.js');

@@ -1,5 +1,6 @@
 import { Position } from "vscode";
-import { DocNode, IRange, Uri } from "./var";
+import { DocNode, Err, IRange, Uri } from "./var";
+import { Func } from "./message/event";
 
 export const pick = <T extends Record<any, any>>(t: T, keys: (keyof T)[]) => {
 	let obj: any = {};
@@ -124,6 +125,11 @@ export const equalPos = (uri1: Uri|undefined, pos1: Position|undefined, uri2: Ur
 	return uriEq && posEq;
 }
 
+export const eqPos = (pos1: Position, pos2: Position) => {
+	const posEq = pos1.line === pos2.line && pos1.character === pos2.character;
+	return posEq;
+}
+
 /** @deprecated 仅 webview */
 export const posInRange = (uri1: Uri|undefined, pos1: Position|undefined, uri2: Uri|undefined, range: IRange|undefined) => {
 	if(!uri1 || !uri2 || !pos1 || !range) return false;
@@ -186,4 +192,17 @@ export function searchUpperSymbol(symbols: DocNode[], lead: Position, tail: Posi
 		}
 	}
 	return -1;
+}
+
+export function latest<T extends Func>(func: T) {
+	let id = 0;
+	return (async function (...args: any[]) {
+		id++;
+		const memoId = id;
+		const res = await func.call(this, ...args);
+		if(memoId !== id) {
+			throw Err.UselessResult;
+		}
+		return res;
+	}) as unknown as T
 }

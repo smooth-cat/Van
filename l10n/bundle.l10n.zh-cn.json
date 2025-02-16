@@ -6,7 +6,7 @@
 	"no reference found!": "未找到任何引用!",
 	"show rest": "点击查看剩余项",
 	"definition file": "定义文件",
-	"close": "关闭",
+	"close{0}": "关闭{0}",
 	"collapse tools": "收起工具栏",
 	"expand tools": "展开工具栏",
 	"exclude tool": "排除工具",
@@ -21,5 +21,8 @@
 	"close(not show again)": "关闭(不再提示)",
 	"choose visible type": "请选择可见类型",
 	"...{0}tags": "...共{0}项",
+	"History List": "历史记录",
+	"No more history": "没有更多的了",
+	"clear history": "清空记录",
 	"Duplicate identifiers detected, this file may be parsed by multiple language plugins!":"检测到标识符重复，本文件可能被多个语言插件解析！"
 }

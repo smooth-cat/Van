@@ -6,6 +6,7 @@ import { debounce } from '../shared/utils';
 import { NavViewProvider } from './provider';
 import { getChangedConf, updateDocCache } from './methods';
 
+
 const { window, workspace } = vscode;
 
 
@@ -25,11 +26,12 @@ export function activate(context: vscode.ExtensionContext) {
 		// 切换选择 或 cursor移动
 		window.onDidChangeTextEditorSelection((e) => emitSelectOrCursorChange(e, provider.msg)),
 		// 文件内容改变
-		workspace.onDidChangeTextDocument(debounce((e) => {
+		workspace.onDidChangeTextDocument((e) => {
+			if(!e.contentChanges?.length) return;
 			updateDocCache(e.document);
 			action.delSymbolsCache(e.document);
-			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri });
-		})),
+			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri, areas: e.contentChanges });
+		}),
 		// 删除项目文件
 		workspace.onDidDeleteFiles((e) => {
 			provider.msg.emit(MsgType.DeleteFile, { uris: e.files });
@@ -47,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 		 * provider 通过 postMessage 和 webview
 		 */
 		vscode.commands.registerCommand('Van.settings', async() => {
-			vscode.commands.executeCommand('workbench.action.openSettings', 'Van.settings')
+			vscode.commands.executeCommand('workbench.action.openSettings', 'Van.settings');
 		}),
 		vscode.workspace.onDidChangeConfiguration(async (e) => {
 			const changedConf = getChangedConf(e);
@@ -55,19 +57,28 @@ export function activate(context: vscode.ExtensionContext) {
 				provider.msg.emit(MsgType.ConfigChange, changedConf)
 			} 
     }),
+		vscode.commands.registerCommand('Van.shortcuts', async() => {
+			vscode.commands.executeCommand('workbench.action.openGlobalKeybindings', 'Van:');
+		}),
+		vscode.commands.registerCommand('Van.history', async() => {
+			provider.msg.emit(MsgType.KeyPress, 'cmd+0');
+		}),
 		vscode.commands.registerCommand('Van.forward', async() => {
-			const res = await vscode.commands.executeCommand('workbench.action.navigateForward')
-			handleCommandMove(provider.msg);
+			// const res = await vscode.commands.executeCommand('workbench.action.navigateForward')
+			// handleCommandMove(provider.msg);
+			provider.msg.emit(MsgType.HistoryCursorMove, 'forward');
 		}),
 		vscode.commands.registerCommand('Van.backward', async() => {
-			const res = await vscode.commands.executeCommand('workbench.action.navigateBack')
-			handleCommandMove(provider.msg);
+			// const res = await vscode.commands.executeCommand('workbench.action.navigateBack')
+			provider.msg.emit(MsgType.HistoryCursorMove, 'backward');
 		}),
-		vscode.commands.registerCommand('Van.lockMode', () => {
-			provider.msg.emit(MsgType.LockModeChange, {});
+		vscode.commands.registerCommand('Van.toggle_lock_mode', () => {
+			provider.msg.emit(MsgType.KeyPress, 'f12');
+		}),
+		vscode.commands.registerCommand('Van.exit_current', () => {
+			provider.msg.emit(MsgType.KeyPress, 'esc');
 		})
 	);
-
 
 
 	function onResolved(self: NavViewProvider) {
@@ -76,9 +87,8 @@ export function activate(context: vscode.ExtensionContext) {
 			try {
 				const result = action[name](...args, self);
 				if(result instanceof Promise) {
-					result.then((v) => {
-						res.send({ data: v });
-					})
+					const pres = await result;
+					res.send({ data: pres });
 				} else {
 					res.send({ data: result });
 				}

@@ -38,7 +38,7 @@
 
 .detail {
 	position: fixed;
-	z-index: 10;
+	z-index: var(--z-detail);
 	width: 100vw;
 	height: 100vh;
 	top: 0;
@@ -164,146 +164,6 @@
 			flex: 1;
 			// overflow: auto;
 		}
-		
-		.ref-file {
-			position: relative;
-			.file-title {
-				display: flex;
-				align-items: flex-end;
-				padding: 8px 8px 8px;
-				.file-expand {
-					transition: .3s;
-					transform: translateX(-2px);
-					transform-origin: center;
-					flex: none;
-					margin-right: 4px;
-					color: white;
-				}
-				.file-expand.expanded {
-					transform: translateX(-2px) rotate(90deg);
-				}
-				position: relative;
-				&.active-file {
-					&:not(:has(.expanded)) {
-						background-color: #2a9c8e78;
-						&::after {
-							display: block;
-							position: absolute;
-							content: '';
-							left: 0;
-							top: 0;
-							width: 2px;
-							height: 100%;
-							background-color:  var(--cg-color-highlight);
-							z-index: 100;
-						}
-					}
-				}
-				.file-name {
-					flex: none;
-					margin-right: 8px;
-					line-height: var(--fz-md);
-					font-size: var(--fz-md);
-				}
-				.file-path {
-					font-size: var(--fz-xs);
-				}
-				.define-wrapper {
-					margin-right: 4px;
-				}
-				.define-circle-flag {
-					font-size: var(--fz-xs);
-					line-height: var(--fz-xs);
-					font-weight: 800;
-					color: rgb(255, 123, 0);
-				}
-			}
-			.ref-list {
-				// padding-left: 16px;
-				position: relative;
-				// top: -8px;
-				.expand-inner {
-					overflow: hidden;
-					.ref-grid {
-						display: grid;
-						grid-template-columns: auto 1fr;
-						// &:not(:has(.active-ref:last-child)) {
-						// 	margin-bottom: 8px;
-						// }
-						.ref-line {
-							cursor: pointer;
-							font-size: var(--fz-xs);
-							align-self: stretch;
-							display: flex;
-							align-items: center;
-							padding: 6px 0 6px 8px;
-							position: relative;
-							&.define-ref {
-								font-weight: 800;
-								color: rgb(255, 123, 0);
-							}
-							&.active-ref::after {
-								display: block;
-								position: absolute;
-								content: '';
-								left: 0;
-								top: 0;
-								width: 2px;
-								height: 100%;
-								background-color:  var(--cg-color-highlight);
-								z-index: 100;
-								transition: 1s;
-							}
-						}
-						.ref-lineTextHighlight {
-							cursor: pointer;
-							align-self: stretch;
-							display: flex;
-							align-items: center;
-							padding: 6px 8px 6px 8px;
-							overflow: hidden;
-							.ref-lineText {
-								width: 100%;
-								.ref-name {
-									background-color: var(--cg-color-highlight);
-									background-clip: text;
-								}
-							}
-						}
-						.active-ref {
-							background-color: #2a9c8e78;
-						}
-					}
-				}
-				// &::after {
-				// 	position: absolute;
-				// 	content: '';
-				// 	height: 100%;
-				// 	background-color: rgba(255, 255, 255, 0.5);
-				// 	width: 1px;
-				// 	top: 0px;
-				// 	left: 7px;
-				// }
-			}
-			.showMoreBtn {
-				cursor: pointer;
-				padding: 6px 0px 1px;
-				position: absolute;
-				bottom: 1px;
-				left: 0;
-				right: 0;
-				width: 100%;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				background: linear-gradient(to bottom,  var(--cg-bg-op) 30%, var(--cg-bg-fade-op) 70%);
-			}
-			.ref-file-divide {
-				width: auto;
-				height: 1px;
-				background-color: var(--cg-border);
-			}
-		}
 	}
 	.refs.clearable {
 		cursor: url('../icon/cur-w.svg') 15 10, auto;
@@ -352,6 +212,147 @@
 				transform: rotate(180deg);
 			}
 		}
+	}
+}
+
+// ------------- detail-ref-file.ts
+.ref-file {
+	position: relative;
+	.file-title {
+		display: flex;
+		align-items: flex-end;
+		padding: 8px 8px 8px;
+		.file-expand {
+			transition: .3s;
+			transform: translateX(-2px);
+			transform-origin: center;
+			flex: none;
+			margin-right: 4px;
+			color: white;
+		}
+		.file-expand.expanded {
+			transform: translateX(-2px) rotate(90deg);
+		}
+		position: relative;
+		&.active-file {
+			&:not(:has(.expanded)) {
+				background-color: #2a9c8e78;
+				&::after {
+					display: block;
+					position: absolute;
+					content: '';
+					left: 0;
+					top: 0;
+					width: 2px;
+					height: 100%;
+					background-color:  var(--cg-color-highlight);
+					z-index: 100;
+				}
+			}
+		}
+		.file-name {
+			flex: none;
+			margin-right: 8px;
+			line-height: var(--fz-md);
+			font-size: var(--fz-md);
+		}
+		.file-path {
+			font-size: var(--fz-xs);
+		}
+		.define-wrapper {
+			margin-right: 4px;
+		}
+		.define-circle-flag {
+			font-size: var(--fz-xs);
+			line-height: var(--fz-xs);
+			font-weight: 800;
+			color: rgb(255, 123, 0);
+		}
+	}
+	.ref-list {
+		// padding-left: 16px;
+		position: relative;
+		// top: -8px;
+		.expand-inner {
+			overflow: hidden;
+			.ref-grid {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				// &:not(:has(.active-ref:last-child)) {
+				// 	margin-bottom: 8px;
+				// }
+				.ref-line {
+					cursor: pointer;
+					font-size: var(--fz-xs);
+					align-self: stretch;
+					display: flex;
+					align-items: center;
+					padding: 6px 0 6px 8px;
+					position: relative;
+					&.define-ref {
+						font-weight: 800;
+						color: rgb(255, 123, 0);
+					}
+					&.active-ref::after {
+						display: block;
+						position: absolute;
+						content: '';
+						left: 0;
+						top: 0;
+						width: 2px;
+						height: 100%;
+						background-color:  var(--cg-color-highlight);
+						z-index: 100;
+						transition: 1s;
+					}
+				}
+				.ref-lineTextHighlight {
+					cursor: pointer;
+					align-self: stretch;
+					display: flex;
+					align-items: center;
+					padding: 6px 8px 6px 8px;
+					overflow: hidden;
+					.ref-lineText {
+						width: 100%;
+						.ref-name {
+							background-color: var(--cg-color-highlight);
+							background-clip: text;
+						}
+					}
+				}
+				.active-ref {
+					background-color: #2a9c8e78;
+				}
+			}
+		}
+		// &::after {
+		// 	position: absolute;
+		// 	content: '';
+		// 	height: 100%;
+		// 	background-color: rgba(255, 255, 255, 0.5);
+		// 	width: 1px;
+		// 	top: 0px;
+		// 	left: 7px;
+		// }
+	}
+	.showMoreBtn {
+		cursor: pointer;
+		padding: 6px 0px 1px;
+		position: absolute;
+		bottom: 1px;
+		left: 0;
+		right: 0;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(to bottom,  var(--cg-bg-op) 30%, var(--cg-bg-fade-op) 70%);
+	}
+	.ref-file-divide {
+		width: auto;
+		height: 1px;
+		background-color: var(--cg-border);
 	}
 }
 

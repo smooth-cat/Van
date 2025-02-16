@@ -10,7 +10,12 @@
 	"pkg.ignore_ref_file_desc": "引用详情-默认忽略文件(glob语法)",
 	"pkg.outline_tag_desc": "大纲-默认可见标识符类型",
 	"pkg.command_title_setting":"🕹设置",
+	"pkg.command_title_shortcuts":"🚀快捷键",
+	"pkg.command_title_history":"🎦历史记录",
+	"pkg.command_title_toggle_lock_mode":"🔐切换锁模式",
+	"pkg.command_title_exit_current":"❌关闭 抽屉 | 模式",
 	"pkg.command_title_forward":"🤡前进👉️",
 	"pkg.command_title_backward":"👈️后退🤡",
+	"pkg.max_history_len_desc":"最多存储的历史记录文件数",
 	"pkg.desc": "一个快速的代码导航插件"
 }

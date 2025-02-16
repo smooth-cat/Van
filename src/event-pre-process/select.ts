@@ -87,6 +87,14 @@ export const handleCommandMove = (msg) => {
 	msg.emit(MsgType.CursorMove, {pos: cursor, uri, kind: RefreshKind.BackOrForward });
 }
 
-export const handleGotoLocation = (uri, pos, msg, forceRefresh) => {
-	msg.emit(MsgType.CursorMove, { uri, pos,  kind: forceRefresh ? RefreshKind.GotoLocationRefresh : RefreshKind.GotoLocation });
+export const handleGotoLocation = (uri, pos, msg, forceRefresh, addHistory) => {
+	msg.emit(MsgType.CursorMove, {
+    uri,
+    pos,
+    kind: !addHistory
+      ? RefreshKind.GotoHistoryLocation
+      : forceRefresh
+      ? RefreshKind.GotoLocationRefresh
+      : RefreshKind.GotoLocation
+  });
 }

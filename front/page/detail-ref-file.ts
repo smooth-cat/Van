@@ -10,13 +10,18 @@ import { onUnmount } from '../runtime/life-circle';
 import { cNames } from '../runtime/util';
 import { Tooltip } from '../components/tooltip';
 import { Popup } from '../components/popup';
-import { isFormer, lastFit, searchUpperSymbol } from '../../shared/utils';
+import { eqPos, isFormer, lastFit, searchUpperSymbol } from '../../shared/utils';
+import { use } from '../runtime/context';
+import { HistoryStore } from '../store/history-stroe';
 export type Props = {
   uri: Uri;
+	refs: Reference[];
   ignoreRefKey: Set<string>;
   ignorePaths: Set<string>;
   clearable: boolean;
-	define: Define;
+	define?: Define;
+	index: number;
+	isHistoryItem?: boolean;
 };
 type Data = {
 	hoverI: number;
@@ -26,6 +31,7 @@ type Data = {
 export const DetailFile: FC<Data, Props> = (data, props) => {
 	data.hoverI = -1;	
 	data.loadingSymbol = false;
+	const store = use<HistoryStore>('historyStore');
 
   function genIgnoreKey(it: Reference) {
     return `${it.lineText}.${it.range[0].line}.${it.range[0].character}.${props.uri.relativePath}`;
@@ -42,7 +48,8 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 		}
   }
 
-  function clickRefItem(reference: Reference) {
+  function clickRefItem(reference: Reference, j: number) {
+		// TODO: 目前通过 cursor 是否存在判断历史记录列表项，如果是则跳转不需要通知，当然也不需要强刷
     if (props.clearable) {
       const ignoreKey = genIgnoreKey(reference);
       props.ignoreRefKey.add(ignoreKey);
@@ -50,7 +57,12 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
     }
     const pos = reference.range[0];
     const { uri } = props;
-    msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(pos), true, false]);
+		if(!props.isHistoryItem) {
+			msg.request(ReqType.Command, ['gotoLocation', toRaw(uri), toRaw(pos), {}]);
+			return;
+		}
+		// 历史列表则直接修改选择项为当前项
+		store.cursor = { i: props.index, j: j };
   }
 
   function handleShowMore() {
@@ -66,12 +78,17 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 		data.hoverI = -1;
 	}
 
+	let emptyTimes = 0;
 	async function getRefFileSymbol() {
-		if(data.loadingSymbol || props.uri.symbols?.length) return;
+		if(emptyTimes >= 2) return; 
+		if(data.loadingSymbol) return;
 		data.loadingSymbol = true;
 		const res = await msg.request<IFetchSymbolsRes>(ReqType.Command, ['fetchSymbol', toRaw(props.uri)]);
 		if(!res.error) {
 			props.uri.symbols = res.data.symbols
+		}
+		if(!res.data.symbols?.length) {
+			emptyTimes++;
 		}
 		data.loadingSymbol = false;
 	}
@@ -85,7 +102,7 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 	function gotoUpper(upperSymbol: DocNode|undefined, destroy: () => void) {
 		if(!upperSymbol) return;
 		const [start] = upperSymbol.selectionRange;
-		msg.request(ReqType.Command, ['gotoLocation', toRaw(props.uri), toRaw(start), true, true]);
+		msg.request(ReqType.Command, ['gotoLocation', toRaw(props.uri), toRaw(start), { triggerEvent: true, forceRefresh: true }]);
 		destroy();
 	}
 
@@ -114,6 +131,10 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 		
 		for (let i = scopes.length - 1; i >= 0 ; i--) {
 			const scope = scopes[i];
+			// 是本体则不计算在 upper 上
+			if(eqPos(it.range[0], scope.selectionRange[0]) && eqPos(it.range[1], scope.selectionRange[1])) {
+				continue;
+			}
 			if([SymbolKind.Class, SymbolKind.Function, SymbolKind.Method].includes(scope.kind)) {
 				upper = scope.name;
 				upperKind = scope.kind;
@@ -137,16 +158,17 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 	}
 
   return () => {
-    const { uri, ignoreRefKey, refs, define } = props;
+    const { uri, ignoreRefKey, refs, define, index, isHistoryItem } = props;
+		const { cursor } = store;
 		const showedRefs = uri.showMore ? refs : refs.slice(0, 10);
     const fileName = uri.relativePath.split('/').pop() || t('none');
-
+		
     return [
       el('div', { class: 'ref-file', onmouseenter: getRefFileSymbol }, [
-        el('div', { class: cNames('file-title', { 'active-file': uri.active }), onclick: clearFile }, [
+        el('div', { class: cNames('file-title', { 'active-file': isHistoryItem ? cursor.i === index :  uri.active }), onclick: clearFile }, [
           // TODO: 使用 icon-font
           fn(Icon, { class: `file-expand ${uri.expand ? 'expanded' : ''}`, i: iArrow, size: 15, onclick: expand }),
-					define.uri.path === uri.path && fn(Tooltip, {
+					!define ? false : (define.uri.path === uri.path) && fn(Tooltip, {
 						els: [el('div', { class: 'define-circle-flag' }, [text(DefineTag)])],
 						tip: t('definition file'),
 						type: 'bottom',
@@ -162,8 +184,9 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
             el(
               'div',
               { class: 'ref-grid' },
-              showedRefs.reduce((lis, it: Reference, i) => {
-								const isDefine = define.range[0].line === it.range[0].line && define.range[0].character === it.range[0].character;
+              showedRefs.reduce((lis, it: Reference, j) => {
+								const isDefine = !define ? false : define.range[0].line === it.range[0].line && define.range[0].character === it.range[0].character;
+								const isActive = isHistoryItem ? (cursor.i === index && cursor.j === j) : it.active;
                 if (ignoreRefKey.has(genIgnoreKey(it))) return lis;
                 lis.push(
                   ...[
@@ -172,11 +195,11 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 											{
 												class: cNames('ref-line', {
 													'define-ref': isDefine,
-													'active-ref': it.active,
-													'hover-ref': data.hoverI === i
+													'active-ref': isActive,
+													'hover-ref': data.hoverI === j
 												}),
-												onclick: () => clickRefItem(it),
-												onmouseenter: () => onEnter(i),
+												onclick: () => clickRefItem(it, j),
+												onmouseenter: () => onEnter(j),
 												onmouseleave: onLeave
 											},
 											[fn(Popup, {
@@ -193,11 +216,11 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
                       'div',
                       {
                         class: cNames('ref-lineTextHighlight', {
-                          'active-ref': it.active,
-                          'hover-ref': data.hoverI === i
+                          'active-ref': isActive,
+                          'hover-ref': data.hoverI === j
                         }),
-                        onclick: () => clickRefItem(it),
-                        onmouseenter: () => onEnter(i),
+                        onclick: () => clickRefItem(it, j),
+                        onmouseenter: () => onEnter(j),
                         onmouseleave: onLeave
                       },
                       [

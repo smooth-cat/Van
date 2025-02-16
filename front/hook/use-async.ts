@@ -62,5 +62,5 @@ export function useAsync<T extends (...args:  any[]) => Promise<any>>(key: strin
 		loadShowedOnce = false;
 	}
 
-	return [run as T, reset];
+	return [run as T, reset] as const;
 }

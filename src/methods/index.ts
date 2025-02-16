@@ -1,9 +1,8 @@
-import { commands, ConfigurationChangeEvent, DocumentSymbol, Position, TextDocument, Uri, workspace } from 'vscode';
+import { commands, ConfigurationChangeEvent, DocumentSymbol, env, ExtensionContext, extensions, Position, TextDocument, Uri, workspace } from 'vscode';
 import { isFormer } from '../../shared/utils';
 import { LockType, SDocNode, SymbolKind, SymbolMap } from '../../shared/var';
 import { LRUCache } from './lru-cache';
 import { timestamp } from '../../shared/message/event';
-
 export const getText = (uri: Uri, start: Position, end: Position) => {};
 
 export const fromPos = (pos: Position) => {
@@ -62,7 +61,7 @@ export async function retryGetSymbols(uri: Uri, start = timestamp(), i = 0) {
 		return unRepeatSymbols(docSymbols);
 	}
 
-	if(now - start > 3000) {
+	if(now - start > 1500) {
 		console.log('leave with timeout', i);
 		return {
 			hasRepeat: false,
@@ -74,7 +73,7 @@ export async function retryGetSymbols(uri: Uri, start = timestamp(), i = 0) {
 		console.log('retryGetSymbols', i);
 		setTimeout(() => {
 			retryGetSymbols(uri, start, i + 1).then(resolve, reject);
-		}, 10);
+		}, 200);
 	});
 }
 
@@ -117,6 +116,11 @@ let _configMap
 export const createConfigMap = () => {
 	if(_configMap) return _configMap;
 	_configMap = {
+		HistoryMaxLength: {
+			process(v: number) {
+				return Number(v);
+			}
+		},
     IgnoreRefFile: {
       process(v: string) {
         return v.trim();

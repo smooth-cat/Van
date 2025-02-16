@@ -1,4 +1,4 @@
-import { DocumentSymbol, Location, Position, Range, Uri as RawUri } from 'vscode';
+import { DocumentSymbol, Location, Position, Range, Uri as RawUri, TextDocumentContentChangeEvent } from 'vscode';
 import { rgbStrToRgb } from './color';
 
 export type Uri = RawUri & {
@@ -21,17 +21,30 @@ export enum MsgType {
   Request = 'Request',
   Response = 'Response',
   Reload = 'Reload',
-  LockModeChange = 'LockModeChange',
-	ConfigChange = 'ConfigChange'
+  KeyPress = 'KeyPress',
+	ConfigChange = 'ConfigChange',
+	KeyBindChange = 'KeyBindChange',
+	OpenHistory = 'OpenHistory',
+	HistoryCursorMove = 'HistoryCursorMove',
 }
+
+export type BindKey = 'f12' | 'esc';
 
 export enum ReqType {
   Command = 'Command',
   Eval = 'Eval'
 }
 
-export type IRange = [Position, Position];
+export type Mutable<T> = {
+  -readonly [K in keyof T]: T[K];
+};
 
+export type IRange = [Mutable<Position>, Mutable<Position>];
+
+
+export type ChangedArea = Omit<TextDocumentContentChangeEvent, 'range'> & {
+	range: IRange
+}
 export type Loc = {
   uri: Uri;
   range: IRange;
@@ -43,6 +56,7 @@ export type Reference = Loc & {
   suffix: string;
   prefix: string;
   active: boolean;
+	miss: boolean;
 };
 
 export type Define = Reference & {
@@ -50,6 +64,8 @@ export type Define = Reference & {
   declaration: string;
   /** 定义在文件中的 作用域 嵌套名称 */
   symbolKey?: string;
+	/** 记录定义在编辑后的偏移量 */
+	delta?: { line: number, character: number };
 };
 
 export type FileRef = [Uri, Reference[]];
@@ -108,7 +124,9 @@ export enum RefreshKind {
   BackOrForward = 'BackOrForward',
   GotoLocation = 'GotoLocation',
   GotoLocationRefresh = 'GotoLocationRefresh',
-  DocEdit = 'DocEdit'
+  GotoHistoryLocation = 'GotoHistoryLocation',
+  DocEdit = 'DocEdit',
+  CreateFile = 'CreateFile',
 }
 
 export enum SymbolKind {
@@ -348,3 +366,8 @@ export const SymbolMap = {
 		};
 	}
 })();
+
+export const Err = {
+	CantGetSymbolInNonFile: '不能获取非文件类型标识符',
+	UselessResult: '无用的返回值，这个Promise的结果被覆盖了',
+}

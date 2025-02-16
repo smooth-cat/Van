@@ -1,5 +1,5 @@
 import { Uri } from 'vscode';
-import { AllSymbolKinds, DocNode, IFetchSymbolsRes, MsgType, ReqType, SymbolKind } from '../../shared/var';
+import { AllSymbolKinds, DocNode, Err, IFetchSymbolsRes, MsgType, ReqType, SymbolKind } from '../../shared/var';
 import { el, fn, text } from '../runtime/el';
 import { FC } from '../runtime/type';
 import { msg } from '../util/var';
@@ -8,7 +8,7 @@ import { Node } from '../components/node';
 import './outline.less';
 import { LabelFilter, LabelItem } from './outline-label-filter';
 import { computed, toRaw } from '@vue/reactivity';
-import { dfs } from '../../shared/utils';
+import { debounce, dfs } from '../../shared/utils';
 import { OutlineSearch } from './outline-search';
 import { onUnmount } from '../runtime/life-circle';
 import { Icon } from '../icon/fc';
@@ -16,21 +16,19 @@ import { iWarn } from '../icon';
 import { info, warn } from '../components/toast';
 import Empty from '../icon/nav-empty.png';
 import { Loading } from '../components/loading';
-import { useConfig } from '../hook/use-defualt';
+import { conf } from '../store/conf';
 export type Props = {};
 type Data = {
   tree: AsyncState<DocNode[]>;
   uri: Uri;
-	defaultLabels: SymbolKind[];
   showLabels: Set<SymbolKind>;
   search: string;
 	hasRepeat: boolean;
 };
 
 export const Outline: FC<Data, Props> = (data, props) => {
-	useConfig('defaultLabels', 'OutlineTags');
   data.showLabels = new Set([
-    ...data.defaultLabels
+    ...conf.OutlineTags
   ]);
   data.search = '';
 	data.hasRepeat = false;
@@ -39,6 +37,9 @@ export const Outline: FC<Data, Props> = (data, props) => {
     'tree',
     async function (uri?: Uri) {
       const res = await msg.request<IFetchSymbolsRes>(ReqType.Command, ['fetchSymbol', uri]);
+			if(res.error === Err.CantGetSymbolInNonFile) {
+				return this.value;
+			}
       const { hasRepeat, symbols } = res.data;
       this.hasRepeat = hasRepeat;
       if (Array.isArray(symbols)) {
@@ -66,7 +67,7 @@ export const Outline: FC<Data, Props> = (data, props) => {
   run();
 
   const dispose1 = msg.on(MsgType.DocSwitch, run);
-  const dispose2 = msg.on(MsgType.CodeChanged, ({ uri }) => run(uri));
+  const dispose2 = msg.on(MsgType.CodeChanged, debounce(({ uri }) => run(uri)));
   onUnmount(() => {
     dispose1();
     dispose2();
@@ -146,7 +147,7 @@ export const Outline: FC<Data, Props> = (data, props) => {
     const { tree, uri } = data;
     return [
       el('div', { class: 'outline' }, [
-        fn(LabelFilter, { labels: data.showLabels, defaultLabels: data.defaultLabels }),
+        fn(LabelFilter, { labels: data.showLabels, defaultLabels: conf.OutlineTags }),
         fn(OutlineSearch, { value: data.search, updateSearch }),
 				data.hasRepeat && el('div', { class: 'hasRepeat',  key: 'hasRepeat', title: t('close(not show again)'), onclick: closeRepeat }, [
 					text(t('Duplicate identifiers detected, this file may be parsed by multiple language plugins!'))

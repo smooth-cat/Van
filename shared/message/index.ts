@@ -58,7 +58,7 @@ export class Message {
 			const start = timestamp();
 			promise.then((res) => {
 				const duration = timestamp() - start;
-				console.log('requestTime', {
+				console.log(`requestTime ${data[0]}`, {
 					duration,
 					type,
 					query: data,

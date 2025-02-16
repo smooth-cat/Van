@@ -18,7 +18,8 @@ import { Minimatch } from 'minimatch';
 import { useDebounceValue } from '../hook/use-debounce-value';
 import { getRelativePath } from '../../shared/utils';
 import { useComputed } from '../runtime/build-in-hook';
-import { useConfig } from '../hook/use-defualt';
+import { bubbleEvent, BubbleLevel } from '../store/bubble-event';
+import { conf, keyBind } from '../store/conf';
 
 export type IActive = {
   uri?: Uri;
@@ -53,9 +54,8 @@ export const Detail: FC<Data, Props> = (data, props) => {
     start: 0,
     end: 0
   };
-	useConfig('defaultSearch', 'IgnoreRefFile');
-	const wHandle = watch(() => data.defaultSearch, (v) => data.search = v);
-  data.search = data.defaultSearch;
+  data.search = conf.IgnoreRefFile;
+	const wHandle = watch(() => conf.IgnoreRefFile, (v) => data.search = v);
 	useDebounceValue('search', 'debounceSearch', 300);
   data.expand = true;
 	data.ignorePaths = new Set();
@@ -105,22 +105,19 @@ export const Detail: FC<Data, Props> = (data, props) => {
   }
   function toggleEnableClear() {
     data.clearable = !data.clearable;
+		if(data.clearable) {
+			bubbleEvent.once('esc', leaveClearableMode);
+		} else {
+			bubbleEvent.off('esc', leaveClearableMode);
+		}
   }
 
   const [verify, update] = useVerify('lockType', props.updateLock);
 
-	function onKeyDown(e) {
-		leaveClearableMode(e);
-		if(e.key === 'F12') {
-			toggleLock();
-		}
+	function leaveClearableMode() {
+		data.clearable = false;
 	}
-
-	function leaveClearableMode(e) {
-		if (e.keyCode === 27) { 
-			data.clearable = false;
-		}
-	}
+	leaveClearableMode['bubble'] = BubbleLevel.DetailCancelClear;
 
 	function toggleLock() {
 		let { lockType, updateLock } = props;
@@ -191,7 +188,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
 		define.uri.relativePath = relativePath;
 	}
 
-	const dispose1 = msg.on(MsgType.LockModeChange, toggleLock);
+	
 	const dispose2 = msg.on(MsgType.DeleteFile, delRefFile);
 	const dispose3 = msg.on(MsgType.RenameFile, renameRefFile);
 
@@ -210,15 +207,13 @@ export const Detail: FC<Data, Props> = (data, props) => {
 		const matchIgnorePaths = data.ignorePaths.has(it[0].relativePath);
 		return !matchGlob && !matchIgnorePaths;
 	}), ['fileRefs']);
-
-	window.addEventListener('keyup', onKeyDown)
-	
+	bubbleEvent.on('f12', toggleLock);
 
   onUnmount(() => {
     ins?.destroy();
     handle.stop();
-		window.removeEventListener('keyup', onKeyDown);
-		dispose1();
+		bubbleEvent.off('f12', toggleLock);
+		bubbleEvent.off('esc', leaveClearableMode);
 		dispose2();
 		dispose3();
 		wHandle.stop();
@@ -237,8 +232,8 @@ export const Detail: FC<Data, Props> = (data, props) => {
           el('div', { class: 'title' }, [
             fn(Tooltip, {
               els: [fn(Icon, { i: iPrevious, size: 18, onclick: close })],
-              tip: t('close'),
-              type: 'bottom',
+              tip: t('close{0}', `(${keyBind['Van.exit_current']})`),
+              type: 'bottom-left',
               class: 'previous'
             }),
             el('div', { class: cNames('tools', { expanded: data.expand }) }, [
@@ -261,9 +256,9 @@ export const Detail: FC<Data, Props> = (data, props) => {
                         onclick: () => update(LockType.UnLock)
                       })
                     ],
-                    tip: `${t('unlock mode')}(F12)`,
+                    tip: `${t('unlock mode')}(${keyBind['Van.toggle_lock_mode']})`,
                     type: 'bottom',
-										class: cNames('iUnlock', { active: verify(LockType.UnLock) }),
+                    class: cNames('iUnlock', { active: verify(LockType.UnLock) })
                   }),
                   fn(Tooltip, {
                     els: [
@@ -273,9 +268,9 @@ export const Detail: FC<Data, Props> = (data, props) => {
                         onclick: () => update(LockType.HalfLock)
                       })
                     ],
-                    tip: `${t('half_lock mode')}(F12)`,
+                    tip: `${t('half_lock mode')}(${keyBind['Van.toggle_lock_mode']})`,
                     type: 'bottom',
-										class: cNames({ active: verify(LockType.HalfLock) }),
+                    class: cNames({ active: verify(LockType.HalfLock) })
                   }),
                   fn(Tooltip, {
                     els: [
@@ -285,35 +280,36 @@ export const Detail: FC<Data, Props> = (data, props) => {
                         onclick: () => update(LockType.Lock)
                       })
                     ],
-                    tip: `${t('lock mode')}(F12)`,
+                    tip: `${t('lock mode')}(${keyBind['Van.toggle_lock_mode']})`,
                     type: 'bottom',
-										class: cNames({ active: verify(LockType.Lock) }),
+                    class: cNames({ active: verify(LockType.Lock) })
                   }),
                   fn(Tooltip, {
                     els: [
                       fn(Icon, {
                         i: iRubber,
                         size: 19,
-												onclick: toggleEnableClear,
+                        onclick: toggleEnableClear
                       })
                     ],
-                    tip: data.clearable ? `${t('exclude tool')}(Esc)` : t('exclude tool'),
+                    tip: data.clearable ? `${t('exclude tool')}(${keyBind['Van.exit_current']})` : t('exclude tool'),
                     type: 'bottom',
-										class: cNames('clearable-btn', { active: data.clearable }), 
+                    class: cNames('clearable-btn', { active: data.clearable })
                   }),
-									(data.ignorePaths.size > 0 || data.ignoreRefKey.size > 0) && fn(Tooltip, {
-                    els: [
-                      fn(Icon, {
-                        i: iCancel,
-                        size: 14,
-                        onclick: cancelClear,
-                      })
-                    ],
-                    tip: t('recover excluded'),
-                    type: 'bottom',
-										class: 'active cancel-btn'
-                  }),
-									fn(Tooltip, {
+                  (data.ignorePaths.size > 0 || data.ignoreRefKey.size > 0) &&
+                    fn(Tooltip, {
+                      els: [
+                        fn(Icon, {
+                          i: iCancel,
+                          size: 14,
+                          onclick: cancelClear
+                        })
+                      ],
+                      tip: t('recover excluded'),
+                      type: 'bottom',
+                      class: 'active cancel-btn'
+                    }),
+                  fn(Tooltip, {
                     els: [el('div', { class: 'plus-icon', onclick: expandFolder })],
                     tip: t('expand all'),
                     type: 'bottom'
@@ -322,7 +318,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
                     els: [el('div', { class: 'dec-icon', onclick: closeFolder })],
                     tip: t('collapse all'),
                     type: 'bottom'
-                  }),
+                  })
                 ]
               })
             ]),
@@ -360,7 +356,18 @@ export const Detail: FC<Data, Props> = (data, props) => {
             },
             filteredRefs.value
               .slice(data.pos.start, data.pos.end)
-              .map(([uri, refs]) => fn(DetailFile, { define, clearable: data.clearable, ignorePaths: data.ignorePaths, ignoreRefKey: data.ignoreRefKey , key: uri.path, uri, refs }))
+              .map(([uri, refs], i) =>
+                fn(DetailFile, {
+                  index: i,
+                  define,
+                  clearable: data.clearable,
+                  ignorePaths: data.ignorePaths,
+                  ignoreRefKey: data.ignoreRefKey,
+                  key: uri.path,
+                  uri,
+                  refs
+                })
+              )
           )
         ])
       ])

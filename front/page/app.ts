@@ -7,25 +7,23 @@ import { Outline } from "./outline";
 import { msg } from "../util/var";
 import { MsgType } from "../../shared/var";
 import { onUnmount } from "../runtime/life-circle";
+import { useHistoryStore } from "../store/history-stroe";
+import { HistoryWrapper } from "./history";
+import { bubbleEvent } from "../store/bubble-event";
 
 export const App: FC = (data, props) => {
-	// 保证组件重新加载时拿到的 conf 是对的
-	const dispose = msg.on(MsgType.ConfigChange, (changed) => {
-		console.log('收到config-change');
-		
-		for (const key in changed) {
-			window['conf'][key] = changed[key];	
-		}
-	});
 
-	onUnmount(() => {
-		dispose()
+	msg.on(MsgType.KeyPress, (key: string) => {
+		bubbleEvent.emit(key);
 	})
+
+	useHistoryStore();
 
 	return () => {
 		return [
 			fn(Outline, {  }),
 			fn(DetailWrapper, {  }),
+			fn(HistoryWrapper, {  })
 		]
 	}
 }
