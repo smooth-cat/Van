@@ -50,10 +50,10 @@ export class Message {
   };
   reqId = 0;
 	reqSubMap = new Map<string, (res: Res, data: any) => void>();
-  idToPromise = new Map<number, ExtPromise<ResDt>>();
+  idToPromise = new Map<string, ExtPromise<ResDt>>();
   request = <T = any>(type: string, data: any) => {
     const promise = new ExtPromise<ResDt<T>>();
-		this.reqId++;
+		const uuid = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
 		if(ENV === 'dev') {
 			const start = timestamp();
 			promise.then((res) => {
@@ -66,8 +66,8 @@ export class Message {
 				});
 			})
 		}
-    this.emit(MsgType.Request, { reqType: type, reqData: data, reqId: this.reqId });
-    this.idToPromise.set(this.reqId, promise as any);
+    this.emit(MsgType.Request, { reqType: type, reqData: data, reqId: uuid });
+    this.idToPromise.set(uuid, promise as any);
     return promise;
   };
   
