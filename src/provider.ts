@@ -32,13 +32,13 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 			]
 		}; 
 		
-		webview.html = this._getHtmlForWebview(webview);
+		this.setWebviewHTML(webview);
 		/*----------------- 插件在后台不会响应 配置变化，每次显示都刷新一下 -----------------*/
 		this.disposes.push(
 			webviewView.onDidChangeVisibility(async() => {
-				console.log('onDidChangeVisibility');
+				console.log('refresh-webview', 'onDidChangeVisibility');
 				if(webviewView.visible) {
-					webview.html = this._getHtmlForWebview(webview);
+					this.setWebviewHTML(webview);
 				}
 			})
 		);
@@ -53,10 +53,17 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 			(fn) => this.disposes.push(webview.onDidReceiveMessage((msg) => fn(msg))),
 		);
 
-		/*----------------- 刷新页面 -----------------*/
-		this.msg.on(MsgType.Reload, async() => {
-			webview.html = this._getHtmlForWebview(webview);
-		})
+		/**
+		 * hmr 刷新页面，
+		 * setWebviewHTML => unload => Reload =>  setWebviewHTML 会导致死循环，
+		 * 目前只对热重载做了处理
+		 */
+		if(ENV === 'dev') {
+			this.msg.on(MsgType.Reload, async() => {
+				console.log('refresh-webview', 'Reload');
+				this.setWebviewHTML(webview);
+			})
+		}
 
 		const msgDisposable = new vscode.Disposable(() => this.msg.clear());
 		this.disposes.push(msgDisposable);
@@ -74,7 +81,7 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 		return this._view?.webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'dist', path));
 	}
 
-	private _getHtmlForWebview(webview: vscode.Webview) {
+	 setWebviewHTML = (webview: vscode.Webview) => {
 		// Use a nonce to only allow a specific script to be run.
 		const nonce = getNonce();
 		const keyBind = getDefaultBindingKey(this);
@@ -92,7 +99,7 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 		// Do the same for the stylesheet.
 		const cssUri = this.getSrc('index.css')
 
-		return `<!DOCTYPE html>
+		const html = `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
@@ -113,6 +120,8 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
+
+		webview.html = html;
 	}
 }
 
