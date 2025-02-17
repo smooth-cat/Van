@@ -56,17 +56,30 @@ export function dfs<K extends string , T extends (Record<any, any> & { [k in K]:
   }
 }
 
-export const debounce = <T extends Function>(fn: T, timeout = 300) => {
+const DebounceOpt = {
+	leading: false,
+	timeout: 300,
+}
+
+type IDebounceOpt = Partial<typeof DebounceOpt>;
+
+export const debounce = <T extends Function>(fn: T, opt: IDebounceOpt = {}) => {
+	opt = { ...DebounceOpt, ...opt };
 	let timer;
 	return (function (this, ...args: any[]) {
 		if(timer != null) {
 			clearTimeout(timer);
 			timer = null;
+		} else {
+			// 直接触发并结束
+			if(opt.leading) {
+				return fn?.call(this, ...args);
+			}
 		}
 		timer = setTimeout(() => {
 			fn?.call(this, ...args);
 			timer = null;
-		}, timeout);
+		}, opt.timeout);
 	}) as unknown as T;
 }
 

@@ -8,6 +8,7 @@ import { iArrow } from '../icon';
 import { Icon } from '../icon/fc';
 import { Expand } from './expand';
 import { useEvent } from '../hook/useEvent';
+import { conf } from '../store/conf';
 
 export type Props = {
   value: DocNode;
@@ -55,10 +56,11 @@ export const Node: FC<Data, Props> = (data, props) => {
       end,
       range: [{ line }]
     } = value;
-    const config = SymbolMap[kind];
-    const type = config[0];
-    const labelStyle = config['addition']['labelStyle'];
-    const cssVar = config['addition']['cssVar'];
+    const labelInfo = SymbolMap[kind];
+    const type = labelInfo[0];
+    const labelStyle = labelInfo['addition']['labelStyle'];
+    const nameStyle = labelInfo['addition']['nameStyle'];
+    const cssVar = labelInfo['addition']['cssVar'];
 
     const match = start !== -1;
 
@@ -78,12 +80,16 @@ export const Node: FC<Data, Props> = (data, props) => {
         onclick: expand
       }),
       el('div', { class: 'mt6 label', style: labelStyle, onclick: clickTag }, [text(type)]),
-      el('div', { class: 'mt6 name', title: name,  onclick: clickSymbolName }, [
-        match
-          ? el('span', {}, [text(prefix), el('span', { class: 'highlight' }, [text(highlight)]), text(suffix)])
-          : text(name),
-        el('span', { class: 'nameLine' }, [text(_i ? `L${line+1}` : '')])
-      ]),
+      el(
+        'div',
+        { class: 'mt6 name', style: conf.TextUseTagColor ? nameStyle : '', title: name, onclick: clickSymbolName },
+        [
+          match
+            ? el('span', {}, [text(prefix), el('span', { class: 'highlight' }, [text(highlight)]), text(suffix)])
+            : text(name),
+          el('span', { class: 'nameLine' }, [text(_i ? `L${line + 1}` : '')])
+        ]
+      ),
       hasChild &&
         (fn(Expand, {
           class: 'expand-children',

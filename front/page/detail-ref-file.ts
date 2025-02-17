@@ -13,6 +13,7 @@ import { Popup } from '../components/popup';
 import { eqPos, isFormer, lastFit, searchUpperSymbol } from '../../shared/utils';
 import { use } from '../runtime/context';
 import { HistoryStore } from '../store/history-stroe';
+import { conf } from '../store/conf';
 export type Props = {
   uri: Uri;
 	refs: Reference[];
@@ -143,14 +144,19 @@ export const DetailFile: FC<Data, Props> = (data, props) => {
 			}
 		}
 
+		const labelInfo = SymbolMap[upperKind];
+		const type = labelInfo[0];
+		const labelStyle = labelInfo['addition']['labelStyle'];
+		const nameStyle = labelInfo['addition']['nameStyle'];
+
 		return [
       data.loadingSymbol
         ? fn(Icon, { i: iLoading, size: 18, style: 'padding-top: 3px;', class: 'loading-icon' })
         : el('div', { class: cNames('popup-upper', { 'can-click': !!upperSymbol }), onclick: () => gotoUpper(upperSymbol, destroy) }, [
-            el('div', { class: 'label', style: `${SymbolMap[upperKind]['addition']['labelStyle']}` }, [
-              text(upper === 'global' ? 'global' : SymbolMap[upperKind][0])
+            el('div', { class: 'label', style: `${labelStyle}` }, [
+              text(upper === 'global' ? 'global' : type)
             ]),
-						el('div', { class: 'name' }, [
+						el('div', { class: 'name', style: conf.TextUseTagColor ? nameStyle : '' }, [
 							text(upper)
 						])
           ])

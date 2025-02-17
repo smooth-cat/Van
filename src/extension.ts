@@ -11,11 +11,12 @@ const { window, workspace } = vscode;
 
 
 export function activate(context: vscode.ExtensionContext) {
+	console.log('activate Van');
+	
 	const provider = new NavViewProvider(context.extensionUri, context, onResolved);
-
 	context.subscriptions.push(
 		// viewType 视图的唯一id。这应该与package.json中views贡献的id匹配
-		window.registerWebviewViewProvider('Van', provider),
+		window.registerWebviewViewProvider('van-webview', provider),
 		// 切换当前编辑文件
 		window.onDidChangeActiveTextEditor(event => {
 			const { uri } = event?.document || window.activeTextEditor?.document || {};

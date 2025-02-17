@@ -358,6 +358,7 @@ export const SymbolMap = {
 		const {r,g,b} = rgbStrToRgb(color);
 		item.addition = {
 			labelStyle: `color: ${color};background: rgba(${r},${g},${b},0.3);`,
+			nameStyle: `color: ${color};`,
 			cssVar: `
 			--label-solid: ${color}; 
 			--label-opacity3: rgba(${r},${g},${b},0.3);

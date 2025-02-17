@@ -2,7 +2,21 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "%pkg.desc%",
-	"version": "1.0.9",
+	"version": "1.0.10",
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"lint": "eslint . --ext .ts,.tsx",
+		"watch": "tsc -w -p tsconfig.json",
+		"hmr": "ENV=dev rspack serve -c ./rspack.config.js",
+		"dev": "npm run clean && npm run pack",
+		"pack": "ENV=dev rspack serve -c ./rspack.config.js & ENV=dev rspack build -c ./rspack.config-src.js",
+		"build-prod": "ENV=prod rspack build -c ./rspack.config.js & ENV=prod rspack build -c ./rspack.config-src.js",
+		"pub": "npm run clean && npm run build-prod && npm run vsce && npm run rei",
+		"compile": "echo ''",
+		"clean": "rm -rf ./dist && rm -rf ./dist-ext",
+		"vsce": "rm -rf node_modules && npm install && vsce package && vsce publish",
+		"rei": "rm -rf node_modules && pnpm install"
+	},
 	"publisher": "smooth-cat",
 	"private": true,
 	"license": "MIT",
@@ -23,7 +37,9 @@
 	"categories": [
 		"Other"
 	],
-	"activationEvents": [],
+	"activationEvents": [
+		"onView:van-webview"
+	],
 	"main": "./dist-ext/extension.js",
 	"l10n": "./l10n",
 	"contributes": {
@@ -50,6 +66,11 @@
 					"default": "node_modules",
 					"description": "%pkg.ignore_ref_file_desc%"
 				},
+				"Van.TextUseTagColor": {
+          "type": "boolean",
+          "default": true,
+          "description": "文字与标签同色"
+        },
 				"Van.OutlineTags": {
 					"type": "array",
 					"items": {
@@ -133,7 +154,7 @@
 			"Van": [
 				{
 					"type": "webview",
-					"id": "Van",
+					"id": "van-webview",
 					"name": "Van"
 				}
 			]
@@ -150,7 +171,11 @@
 			{
         "command": "Van.history",
         "key": "alt+1"
-      }
+      },
+			{
+				"command": "workbench.view.extension.Van",
+				"key": "alt+3"
+			}
 		],
 		"commands": [
 			{
@@ -193,45 +218,31 @@
 			"webview/context": [
 				{
 					"command": "Van.history",
-					"when": "webviewId == 'Van'",
+					"when": "webviewId == 'van-webview'",
 					"group": "Van@1"
 				},
 				{
 					"command": "Van.forward",
-					"when": "webviewId == 'Van'",
+					"when": "webviewId == 'van-webview'",
 					"group": "Van@2"
 				},
 				{
 					"command": "Van.backward",
-					"when": "webviewId == 'Van'",
+					"when": "webviewId == 'van-webview'",
 					"group": "Van@3"
 				},
 				{
 					"command": "Van.settings",
-					"when": "webviewId == 'Van'",
+					"when": "webviewId == 'van-webview'",
 					"group": "Van@4"
 				},
 				{
 					"command": "Van.shortcuts",
-					"when": "webviewId == 'Van'",
+					"when": "webviewId == 'van-webview'",
 					"group": "Van@4"
 				}
 			]
 		}
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"lint": "eslint . --ext .ts,.tsx",
-		"watch": "tsc -w -p tsconfig.json",
-		"hmr": "ENV=dev rspack serve -c ./rspack.config.js",
-		"dev": "npm run clean && npm run pack",
-		"pack": "ENV=dev rspack serve -c ./rspack.config.js & ENV=dev rspack build -c ./rspack.config-src.js",
-		"build-prod": "ENV=prod rspack build -c ./rspack.config.js & ENV=prod rspack build -c ./rspack.config-src.js",
-		"pub": "npm run clean && npm run build-prod && npm run vsce && npm run rei",
-		"compile": "echo ''",
-		"clean": "rm -rf ./dist && rm -rf ./dist-ext",
-		"vsce": "rm -rf node_modules && npm install && vsce package && vsce publish",
-		"rei": "rm -rf node_modules && pnpm install"
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^11.0.2",

@@ -126,6 +126,11 @@ export const createConfigMap = () => {
         return v.trim();
       }
     },
+    TextUseTagColor: {
+      process(v: boolean) {
+        return v;
+      }
+    },
     OutlineTags: {
       dataMap: (() => {
         const tagToEnum: Record<string, SymbolKind> = {};
