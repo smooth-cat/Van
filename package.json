@@ -2,7 +2,7 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "%pkg.desc%",
-	"version": "1.0.7",
+	"version": "1.0.9",
 	"publisher": "smooth-cat",
 	"private": true,
 	"license": "MIT",

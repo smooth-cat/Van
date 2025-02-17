@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 		 * provider 通过 postMessage 和 webview
 		 */
 		vscode.commands.registerCommand('Van.settings', async() => {
-			vscode.commands.executeCommand('workbench.action.openSettings', 'Van.settings');
+			vscode.commands.executeCommand('workbench.action.openSettings', '@ext:smooth-cat.van');
 		}),
 		vscode.workspace.onDidChangeConfiguration(async (e) => {
 			const changedConf = getChangedConf(e);
@@ -58,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
 			} 
     }),
 		vscode.commands.registerCommand('Van.shortcuts', async() => {
-			vscode.commands.executeCommand('workbench.action.openGlobalKeybindings', 'Van:');
+			vscode.commands.executeCommand('workbench.action.openGlobalKeybindings', '@ext:smooth-cat.van');
 		}),
 		vscode.commands.registerCommand('Van.history', async() => {
 			provider.msg.emit(MsgType.KeyPress, 'cmd+0');

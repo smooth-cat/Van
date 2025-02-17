@@ -73,12 +73,17 @@ export const HistoryWrapper: FC<Data, Props> = (data, props) => {
 			// 改的位置在所有区域之后则跳过
 			if(isFormer(refStart, changeStart, true)) {
 				// 从 j 往前找相同的标识符都做 rename 处理
-				for (let p = j-1; p >=0; p--) {
+				let p = j-1;
+				for (; p >=0; p--) {
 					const prevRef = list[p];
 					if(eqPos(prevRef.range[0], refStart)) {
 						// fix 同节点
 						fixDefineRange(uri, change, prevRef, true);
 					}
+				}
+				// 说明找到了相同的标识符
+				if(p < j-1) {
+					j = p;
 				}
 				// fix 本节点
 				fixDefineRange(uri, change, ref, true);
@@ -94,7 +99,6 @@ export const HistoryWrapper: FC<Data, Props> = (data, props) => {
 			}
 			// 处理完成该 ref 的位置
 			j--;
-
 		}
 	})
 
