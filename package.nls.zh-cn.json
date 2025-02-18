@@ -17,5 +17,6 @@
 	"pkg.command_title_forward":"🤡前进👉️",
 	"pkg.command_title_backward":"👈️后退🤡",
 	"pkg.max_history_len_desc":"最多存储的历史记录文件数",
-	"pkg.desc": "一个快速的代码导航插件"
+	"pkg.desc": "一个快速的代码导航插件",
+	"pkg.command_title_toggle_panel":"🔄切换 Van 面板"
 }

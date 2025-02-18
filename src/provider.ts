@@ -123,6 +123,11 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 
 		webview.html = html;
 	}
+
+	// 添加公共方法获取视图状态
+	public isVisible() {
+		return this._view?.visible;
+	}
 }
 
 function getNonce() {

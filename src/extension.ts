@@ -78,6 +78,13 @@ export function activate(context: vscode.ExtensionContext) {
 		}),
 		vscode.commands.registerCommand('Van.exit_current', () => {
 			provider.msg.emit(MsgType.KeyPress, 'esc');
+		}),
+		vscode.commands.registerCommand('Van.toggle_panel', () => {
+			if (provider.isVisible()) {
+				vscode.commands.executeCommand('workbench.view.explorer');
+			} else {
+				vscode.commands.executeCommand('workbench.view.extension.Van');
+			}
 		})
 	);
 

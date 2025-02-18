@@ -17,5 +17,6 @@
 	"pkg.command_title_forward":"🤡Forward👉️",
 	"pkg.command_title_backward":"👈️Backward🤡",
 	"pkg.max_history_len_desc":"history - maximum number of historical record file entries stored",
-	"pkg.desc":"a guide for quick code reading"
+	"pkg.desc":"a guide for quick code reading",
+	"pkg.command_title_toggle_panel":"🔄Toggle Van Panel"
 }

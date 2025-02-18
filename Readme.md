@@ -5,6 +5,12 @@
 
 如果本插件对你有帮助的话，请为它好评哦 😝 祝编码愉快 ~
 
+### 注意
+
+如果你使用了 AI 编程工具如 cursor、copilot、windsurf 等，
+
+可把 Van 插件置于左侧边栏，通过 `mac: option + 1` 或 `win: alt + 1` 在插件和资源管理器之间快速切换
+
 ## 使用
 
 1. 安装插件后可拖动左侧工具栏中的 Van 插件图标到编辑器右侧，即可在右侧边栏常驻。
@@ -17,10 +23,10 @@
 
 插件中右键菜单 - “🚀快捷键”  可打开插件的快捷键配置。插件快捷键如下：
 
-1. 打开历史记录： `mac: option + 1` 、 `win: alt + 1`
-2. 切换锁模式： `mac: option + 2` 、 `win: alt + 2`
-3. 打开 Van 插件： `mac: option + 3` 、 `win: alt + 3`
-4. 退出当前 抽屉 | 模式 ：`Esc`
+1. 切换 Van 面板：`mac: option + 1` 、 `win: alt + 1`
+2. 打开历史记录：`mac: option + 2` 、 `win: alt + 2`
+3. 切换锁模式：`mac: option + s` 、 `win: alt + s`
+4. 退出当前 抽屉 | 模式：`Esc`
 
 ### 即时引用展示
 
@@ -34,7 +40,7 @@
    1. 无锁模式，用户 **单击** 标识符就切换引用展示
    2. 半锁模式，用户通过 **选中** 来切换引用展示
    3. 锁模式，锁住当前展示引用
-   4. **`mac: option + 2` 、 `win: alt + 2` 可在 无锁 和 锁 模式切换**
+   4. **`mac: option + s` 、 `win: alt + s` 可在 无锁 和 锁 模式切换**
 
    <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/lock-type.png?raw=true" width="650" style="float: left" />
 
@@ -58,7 +64,7 @@
 
 ### 历史记录
 
-1. 插件中右键菜单 可打开历史记录界面，快捷键： `mac: option + 1` 、 `win: alt + 1`
+1. 插件中右键菜单 可打开历史记录界面，快捷键： `mac: option + 2` 、 `win: alt + 2`
 1. 历史记录支持通过右键菜单 - "🤡前进👉️" 或 "👈️后退🤡" 实现跳转
 
 <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/history.png?raw=true" width="700" style="float: left" />
@@ -80,6 +86,12 @@ For programming navigation, providing features like **Real-time Reference Displa
 
 If this plugin helps you, please leave a positive review 😝 Happy coding ~
 
+### Note
+
+If you are using AI programming tools like cursor, copilot, windsurf, etc.,
+
+You can place the Van plugin in the left sidebar and switch between the plugin and the resource manager through `mac: option + 1` or `win: alt + 1`
+
 ## Usage
 
 1. After installation, drag the Van plugin icon from the left toolbar to the right side of the editor to keep it in the right sidebar.
@@ -91,9 +103,9 @@ If this plugin helps you, please leave a positive review 😝 Happy coding ~
 
 Right-click in the plugin panel → "🚀 Shortcuts" to view configurable shortcuts. Default shortcuts:
 
-1. Open History: `mac: option + 1`, `win: alt + 1`
-2. Toggle Lock Mode: `mac: option + 2`, `win: alt + 2`
-3. open Van Plugin：`mac: option + 3` 、 `win: alt + 3`
+1. Switch Van Panel: `mac: option + 1`, `win: alt + 1`
+2. Open History: `mac: option + 2`, `win: alt + 2`
+3. Toggle Lock Mode: `mac: option + s`, `win: alt + s`
 4. Exit Current Drawer | Mode: `Esc`
 
 ### Real-time Reference Display
@@ -108,7 +120,7 @@ Displays identifier references based on the **mouse click position** in real-tim
    - **Unlocked Mode**: Switch reference display by clicking identifiers
    - **Semi-lock Mode**: Switch reference display by selecting identifiers
    - **Locked Mode**: Lock current reference display
-   - **`mac: option + 2`, `win: alt + 2`** toggles between Unlocked and Locked modes.
+   - **`mac: option + s`, `win: alt + s`** toggles between Unlocked and Locked modes.
 
    <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/lock-type.png?raw=true" width="650" style="float: left" />
 
@@ -133,7 +145,7 @@ Displays identifiers within different code scopes.
 
 ### History
 
-1. Right-click in the plugin panel → "History" to view navigation history (Shortcut: `mac: option + 1`, `win: alt + 1`)
+1. Right-click in the plugin panel → "History" to view navigation history (Shortcut: `mac: option + 2`, `win: alt + 2`)
 2. Use "🤡 Forward 👉️" or "👈️ Back 🤡" in the right-click menu to navigate history.
 
 <img src="https://github.com/smooth-cat/Van/blob/master/readme-img/history.png?raw=true" width="700" style="float: left" />

@@ -2,7 +2,7 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "%pkg.desc%",
-	"version": "1.0.11",
+	"version": "1.0.12",
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"lint": "eslint . --ext .ts,.tsx",
@@ -28,7 +28,7 @@
 		"url": "https://github.com/smooth-cat/Van"
 	},
 	"engines": {
-		"vscode": "^1.97.0"
+		"vscode": "^1.74.0"
 	},
 	"extensionKind": [
 		"ui",
@@ -67,10 +67,10 @@
 					"description": "%pkg.ignore_ref_file_desc%"
 				},
 				"Van.TextUseTagColor": {
-          "type": "boolean",
-          "default": true,
-          "description": "文字与标签同色"
-        },
+					"type": "boolean",
+					"default": true,
+					"description": "文字与标签同色"
+				},
 				"Van.OutlineTags": {
 					"type": "array",
 					"items": {
@@ -162,19 +162,19 @@
 		"keybindings": [
 			{
 				"command": "Van.toggle_lock_mode",
-				"key": "alt+2"
+				"key": "alt+s"
 			},
 			{
 				"command": "Van.exit_current",
 				"key": "escape"
 			},
 			{
-        "command": "Van.history",
-        "key": "alt+1"
-      },
+				"command": "Van.history",
+				"key": "alt+2"
+			},
 			{
-				"command": "workbench.view.extension.Van",
-				"key": "alt+3"
+				"command": "Van.toggle_panel",
+				"key": "alt+1"
 			}
 		],
 		"commands": [
@@ -211,6 +211,11 @@
 			{
 				"command": "Van.shortcuts",
 				"title": "🚀快捷键",
+				"category": "Van"
+			},
+			{
+				"command": "Van.toggle_panel",
+				"title": "%pkg.command_title_toggle_panel%",
 				"category": "Van"
 			}
 		],
@@ -251,7 +256,7 @@
 		"@rspack/core": "^1.1.3",
 		"@rspack/dev-server": "^1.0.9",
 		"@types/node": "^22.13.0",
-		"@types/vscode": "^1.97.0",
+		"@types/vscode": "^1.74.0",
 		"@typescript-eslint/eslint-plugin": "^4.16.0",
 		"@typescript-eslint/parser": "^4.16.0",
 		"@vscode/vsce": "2.27.0",
