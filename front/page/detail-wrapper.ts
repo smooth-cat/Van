@@ -10,7 +10,7 @@ import { Position } from 'vscode';
 import { debounce, eqPos, isFormer, posInRange } from '../../shared/utils';
 import { onUnmount } from '../runtime/life-circle';
 import { use } from '../runtime/context';
-import { HistoryStore, unshiftHistory } from '../store/history-stroe';
+import { HistoryStore, unshiftHistory } from '../store/history-store';
 import { bubbleEvent, BubbleLevel } from '../store/bubble-event';
 import { conf } from '../store/conf';
 import { useDebounceValue } from '../hook/use-debounce-value';

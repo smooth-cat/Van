@@ -4,3 +4,4 @@ export * from './fetch-reference';
 export * from './fetch-hack-key-bind';
 export * from './fetch-workspace-path';
 export * from './goto-location';
+export * from './history';

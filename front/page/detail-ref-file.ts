@@ -12,7 +12,7 @@ import { Tooltip } from '../components/tooltip';
 import { Popup } from '../components/popup';
 import { eqPos, isFormer, lastFit, searchUpperSymbol } from '../../shared/utils';
 import { use } from '../runtime/context';
-import { HistoryStore } from '../store/history-stroe';
+import { HistoryStore } from '../store/history-store';
 import { conf } from '../store/conf';
 export type Props = {
   uri: Uri;

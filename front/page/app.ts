@@ -7,7 +7,7 @@ import { Outline } from "./outline";
 import { msg } from "../util/var";
 import { MsgType } from "../../shared/var";
 import { onUnmount } from "../runtime/life-circle";
-import { useHistoryStore } from "../store/history-stroe";
+import { useHistoryStore } from "../store/history-store";
 import { HistoryWrapper } from "./history";
 import { bubbleEvent } from "../store/bubble-event";
 

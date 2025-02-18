@@ -1,3 +1,4 @@
+import { isReactive, isRef, toRaw } from "@vue/reactivity";
 import { Message } from "../../shared/message";
 import { BaseEvent } from "../../shared/message/event";
 import { eqPos, isFormer } from "../../shared/utils";
@@ -145,3 +146,28 @@ export const abort = AbortCon();
 export const signal = abort.signal;
 
 export const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
+
+
+export function deepToRaw<T>(val: T): T {
+  if (isRef(val)) {
+    return deepToRaw(val.value) as T;
+  }
+  
+  if (Array.isArray(val)) {
+    return val.map(item => deepToRaw(item)) as T;
+  }
+  
+  if (isReactive(val)) {
+    const raw = toRaw(val)
+    if (typeof raw === 'object' && raw !== null) {
+      return Object.fromEntries(
+        Object.entries(raw).map(([key, value]) => [
+          key,
+          deepToRaw(value)
+        ])
+      ) as T;
+    }
+  }
+  
+  return val;
+}

@@ -1,6 +1,6 @@
 import { ChangedArea, MsgType, Reference, ReqType, Uri } from '../../shared/var';
 import { Tooltip } from '../components/tooltip';
-import { HistoryStore } from '../store/history-stroe';
+import { HistoryStore, clearHistory } from '../store/history-store';
 import { iDelete, iPrevious } from '../icon';
 import { Icon } from '../icon/fc';
 import { use } from '../runtime/context';
@@ -16,6 +16,8 @@ import Empty from '../icon/nav-empty.png';
 import { toRaw, watch } from '@vue/reactivity';
 import { info } from '../components/toast';
 import { eqPos, isFormer } from '../../shared/utils';
+import { Loading } from '../components/loading';
+
 export type Props = {
 	
 }
@@ -188,8 +190,7 @@ export const History: FC<Data, Props> = (data, props) => {
 	}
 
 	function deleteAll() {
-		store.historyList = [];
-		store.cursor = { i: 0, j: 0}
+		clearHistory(store);
 	}
 
 	close['bubble'] = BubbleLevel.History;
@@ -201,7 +202,7 @@ export const History: FC<Data, Props> = (data, props) => {
 	})
 
 	return () => {
-		const { historyList, cursor } = store;
+		const { historyList, cursor, loading } = store;
 
 		return [
 			el('div', { class: 'history' }, [
@@ -222,18 +223,18 @@ export const History: FC<Data, Props> = (data, props) => {
 				]),
 				el('div', { class: 'history-list hide-scrollbar' }, !historyList?.length ? [
 					el('div', { class: 'loading-wrapper' }, [
-						el('img', { class: 'loading-img', src: Empty })
+						loading ? fn(Loading) : el('img', { class: 'loading-img', src: Empty })
 					])
 				] : historyList.map(({ uri, refs }, i) => {
 					return fn(DetailFile, {
-            index: i,
-            clearable: false,
-            ignorePaths: temp,
-            ignoreRefKey: temp,
-            uri,
-            refs,
-            isHistoryItem: true,
-          });
+						index: i,
+						clearable: false,
+						ignorePaths: temp,
+						ignoreRefKey: temp,
+						uri,
+						refs,
+						isHistoryItem: true,
+					});
 				}))
 			])
 		]
