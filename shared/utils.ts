@@ -56,12 +56,12 @@ export function dfs<K extends string , T extends (Record<any, any> & { [k in K]:
   }
 }
 
-const DebounceOpt = {
+export const DebounceOpt = {
 	leading: false,
 	timeout: 300,
 }
 
-type IDebounceOpt = Partial<typeof DebounceOpt>;
+export type IDebounceOpt = Partial<typeof DebounceOpt>;
 
 export const debounce = <T extends Function>(fn: T, opt: IDebounceOpt = {}) => {
 	opt = { ...DebounceOpt, ...opt };

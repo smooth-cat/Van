@@ -34,6 +34,9 @@ export type Props = {
 	lockType: LockType;
   close: () => void;
   updateLock: (v: LockType) => void;
+	search: string;
+	searchDebounce: string;
+	updateSearch: (v: string) => void;
 };
 
 export type Data = {
@@ -41,9 +44,6 @@ export type Data = {
     start: number;
     end: number;
   };
-	defaultSearch: string;
-  search: string;
-	debounceSearch: string;
   expand: boolean;
 	clearable: boolean;
 	ignorePaths: Set<String>;
@@ -54,9 +54,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
     start: 0,
     end: 0
   };
-  data.search = conf.IgnoreRefFile;
-	const wHandle = watch(() => conf.IgnoreRefFile, (v) => data.search = v);
-	useDebounceValue('search', 'debounceSearch', 300);
+
   data.expand = true;
 	data.ignorePaths = new Set();
 	data.ignoreRefKey = new Set();
@@ -97,7 +95,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
   };
 
   function onChange(v: string) {
-    data.search = v;
+    props.updateSearch(v);
   }
 
   function toggleTools() {
@@ -193,7 +191,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
 	const dispose3 = msg.on(MsgType.RenameFile, renameRefFile);
 
 	const ignoreReg = computed(() => {
-		let input = data.debounceSearch.trim();
+		let input = props.debounceSearch.trim();
 		const lastChar = input.at(-1);
 		const endWithSlash = lastChar === '\\' || lastChar === '/';
 		if(lastChar != null) {
@@ -216,7 +214,6 @@ export const Detail: FC<Data, Props> = (data, props) => {
 		bubbleEvent.off('esc', leaveClearableMode);
 		dispose2();
 		dispose3();
-		wHandle.stop();
   });
 
   return () => {
@@ -324,7 +321,7 @@ export const Detail: FC<Data, Props> = (data, props) => {
             ]),
             el('div', { title: define.name, class: 'title-name' }, [text(define.name)])
           ]),
-          fn(Input, { value: data.search, onChange, placeholder: t('input ignore files(glob)') })
+          fn(Input, { value: props.search, onChange, placeholder: t('input ignore files(glob)') })
         ]),
         showDefine &&
           el('div', { class: 'define' }, [

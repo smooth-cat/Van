@@ -71,7 +71,7 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 		this.onResolved?.(this);
 	}
 
-	msg: Message = {} as any;
+	msg?: Message = { emit: () => {} } as any;
 
 	private getSrc = (path: string) => {
 		// @ts-ignore

@@ -1,25 +1,25 @@
 import { watch } from "@vue/reactivity";
-import { getData } from "../runtime/global"
-import { onUnmount } from "../runtime/life-circle";
+import { getData, getProps } from "../runtime/global"
+import { onPropsChanged, onUnmount } from "../runtime/life-circle";
+import { debounce, IDebounceOpt } from "../../shared/utils";
 
-export const useDebounceValue = (rawKey: string, key: string, time = 300) => {
+export const useDebounceValue = (rawKey: string, key: string, isProps: boolean, opt?: IDebounceOpt) => {
 	const data = getData();
-	data[key] = data[rawKey];
-	let timeout: NodeJS.Timeout;
+	const props = getProps();
+	const rawValue = () => isProps ? props[rawKey] : data[rawKey];
+	data[key] = rawValue();
 
-	const dispose = watch(() => data[rawKey], () => {
-		if(timeout) {
-			clearTimeout(timeout);
-			timeout = undefined;
-		}
+	const debounceValue = debounce(() => {
+		const value = rawValue();
+		data[key] = value;
+	}, opt);
 
-		timeout = setTimeout(() => {
-			data[key] = data[rawKey]
-			timeout = undefined;
-		}, time);
-	});
-
-	onUnmount(() => {
-		dispose();
-	})
+	if(isProps) {
+		onPropsChanged(debounceValue);
+	} else {
+		const dispose = watch(() => data[rawKey], debounceValue);
+		onUnmount(() => {
+			dispose();
+		})
+	}
 }

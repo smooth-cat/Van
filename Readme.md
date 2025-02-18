@@ -19,7 +19,8 @@
 
 1. 打开历史记录： `mac: option + 1` 、 `win: alt + 1`
 2. 切换锁模式： `mac: option + 2` 、 `win: alt + 2`
-3. 退出当前 抽屉 | 模式 ：`Esc`
+3. 打开 Van 插件： `mac: option + 3` 、 `win: alt + 3`
+4. 退出当前 抽屉 | 模式 ：`Esc`
 
 ### 即时引用展示
 
@@ -92,7 +93,8 @@ Right-click in the plugin panel → "🚀 Shortcuts" to view configurable shortc
 
 1. Open History: `mac: option + 1`, `win: alt + 1`
 2. Toggle Lock Mode: `mac: option + 2`, `win: alt + 2`
-3. Exit Current Drawer | Mode: `Esc`
+3. open Van Plugin：`mac: option + 3` 、 `win: alt + 3`
+4. Exit Current Drawer | Mode: `Esc`
 
 ### Real-time Reference Display
 

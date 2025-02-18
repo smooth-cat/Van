@@ -13,6 +13,7 @@ import { use } from '../runtime/context';
 import { HistoryStore, unshiftHistory } from '../store/history-stroe';
 import { bubbleEvent, BubbleLevel } from '../store/bubble-event';
 import { conf } from '../store/conf';
+import { useDebounceValue } from '../hook/use-debounce-value';
 
 export type WrapperProps = {};
 type WrapperData = {
@@ -305,7 +306,7 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 		dispose4();
 		bubbleEvent.off('esc', reset);
 		wHandle.stop();
-		// wHandle1.stop();
+		wHandle1.stop();
   });
 
   function handleMoveOrSelect(uri, pos, kind, isSelect = false) {
@@ -334,11 +335,36 @@ export const DetailWrapper: FC<WrapperData, Props> = (data, props) => {
 
 	const updateLock = (v: LockType) => data.lockType = v;
 
+
+	// TODO: search 不要每次进 detail 都重置为 默认值
+  data.search = conf.IgnoreRefFile;
+	const wHandle1 = watch(() => conf.IgnoreRefFile, (v) => data.search = v);
+	useDebounceValue('search', 'debounceSearch', false);
+	function updateSearch(v: boolean) {
+		data.search = v;
+	}
+
   return () => {
     const { value: { define, fileRefs, key } = {} } = data.refs;
     const showDetail = hasRefs();
 
-    return [el('div', {}, [showDetail && fn(Detail, { updateLock, lockType: data.lockType, active: data.active, key, fileRefs, define, close: reset })])];
+    return [
+      el('div', {}, [
+        showDetail &&
+          fn(Detail, {
+            search: data.search,
+            debounceSearch: data.debounceSearch,
+            updateSearch,
+            updateLock,
+            lockType: data.lockType,
+            active: data.active,
+            key,
+            fileRefs,
+            define,
+            close: reset
+          })
+      ])
+    ];
   };
 };
 
