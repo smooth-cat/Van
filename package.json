@@ -2,7 +2,7 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "%pkg.desc%",
-	"version": "1.0.13",
+	"version": "1.0.16",
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"lint": "eslint . --ext .ts,.tsx",
@@ -69,7 +69,7 @@
 				"Van.TextUseTagColor": {
 					"type": "boolean",
 					"default": true,
-					"description": "文字与标签同色"
+					"description": "%pkg.text_use_tag_color_desc%"
 				},
 				"Van.OutlineTags": {
 					"type": "array",
@@ -210,7 +210,7 @@
 			},
 			{
 				"command": "Van.shortcuts",
-				"title": "🚀快捷键",
+				"title": "%pkg.command_title_shortcuts%",
 				"category": "Van"
 			},
 			{

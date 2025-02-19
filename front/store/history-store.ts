@@ -1,4 +1,4 @@
-import { reactive, toRaw } from "@vue/reactivity";
+import { reactive, toRaw, watch } from "@vue/reactivity";
 import { inject } from "../runtime/context";
 import { Reference, Uri, ReqType } from "../../shared/var";
 import { useConfig } from "../hook/use-defualt";
@@ -19,13 +19,24 @@ export type HistoryStore = typeof DefaultHistoryStore;
 export const useHistoryStore = () => {
 	const store = reactive({ ...DefaultHistoryStore });
 	
-	// 初始化时从 workspaceState 读取历史记录
+	// 初始化时从 workspaceState 读取历史记录和显示状态
 	store.loading = true;
-	msg.request<any[]>(ReqType.Command, ['getHistoryList']).then(res => {
-		if (!res.error) {
-			store.historyList = res.data || [];
+	Promise.all([
+		msg.request<any[]>(ReqType.Command, ['getHistoryList']),
+		msg.request<boolean>(ReqType.Command, ['getHistoryShown'])
+	]).then(([listRes, shownRes]) => {
+		if (!listRes.error) {
+			store.historyList = listRes.data || [];
+		}
+		if (!shownRes.error) {
+			store.shown = shownRes.data;
 		}
 		store.loading = false;
+	});
+
+	// 监听 shown 变化保存状态
+	watch(() => store.shown, (shown) => {
+		msg.request(ReqType.Command, ['saveHistoryShown', shown]);
 	});
 
 	inject('historyStore', store);

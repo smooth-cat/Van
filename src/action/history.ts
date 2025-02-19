@@ -10,4 +10,12 @@ export async function saveHistoryList(list: any[], provider: NavViewProvider) {
     list = list.slice(0, maxLength);
   }
   await provider.extCtx.workspaceState.update('historyList', list);
+}
+
+export async function getHistoryShown(provider: NavViewProvider) {
+  return await provider.extCtx.workspaceState.get('historyShown', false);
+}
+
+export async function saveHistoryShown(shown: boolean, provider: NavViewProvider) {
+  await provider.extCtx.workspaceState.update('historyShown', shown);
 } 

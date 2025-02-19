@@ -18,5 +18,6 @@
 	"pkg.command_title_backward":"👈️Backward🤡",
 	"pkg.max_history_len_desc":"history - maximum number of historical record file entries stored",
 	"pkg.desc":"a guide for quick code reading",
-	"pkg.command_title_toggle_panel":"🔄Toggle Van Panel"
+	"pkg.command_title_toggle_panel":"🔄Toggle Van Panel",
+	"pkg.text_use_tag_color_desc": "text color follows tag color"
 }
