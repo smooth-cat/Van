@@ -1,5 +1,5 @@
 import { Position } from "vscode";
-import { DocNode, Err, IRange, Uri } from "./var";
+import { ChangedArea, DocNode, Err, IRange, Reference, Uri } from "./var";
 import { Func } from "./message/event";
 
 export const pick = <T extends Record<any, any>>(t: T, keys: (keyof T)[]) => {
@@ -218,4 +218,150 @@ export function latest<T extends Func>(func: T) {
 		}
 		return res;
 	}) as unknown as T
+}
+
+export function fixDefineRange(uri: Uri, area: ChangedArea, reference: Reference, updateName = false) {
+	if(reference.miss) return true;
+	if(uri.path !== reference.uri.path) return false;
+	const [changedStart, changedEnd] = area.range;
+	const [refStart, refEnd] = reference.range;
+	// 无修改
+	// [-][~]
+	if(isFormer(refEnd, changedStart)) return false;
+	// 破坏标识符
+	//     [-- --]
+	//  [~~ ~~]
+	if(isFormer(changedStart, refStart) && isFormer(refStart, changedEnd)) {
+		reference.miss = true;
+		return true;
+	}
+	//  重命名，从替换位置开始拼接，碰 \s 终止，作为新标识符
+	//  [----]
+	//  [~~~~ ~~]
+	if(isFormer(refStart, changedStart, true)) {
+		const symbolRegexp = /^[\p{L}_$][\p{L}\p{N}_$]*/u
+		const wrapI = area.text.indexOf('\n');
+		let firstLine = wrapI === -1 ? area.text : area.text.slice(0, wrapI);
+		const isMultiReplacer = wrapI !== -1;
+		let prefix = '';
+		// 处理空白符
+		if(eqPos(refStart, changedStart)) {
+			const blankStart = firstLine.match(/^[ \t\f\r]*/)?.[0] || '';
+			if(blankStart.length) {
+				refStart.character += blankStart.length;
+				refEnd.character += blankStart.length;
+				firstLine = firstLine.slice(blankStart.length);
+			}
+		} else {
+			// 头部一定同行，因为 define 是一行的，同时 start 又在 define 之内
+			prefix = reference.name.slice(0, changedStart.character - refStart.character);
+		}
+
+		let suffix = '';
+		if(isFormer(changedEnd, refEnd)) {
+			suffix = reference.name.slice(changedEnd.character - refEnd.character);
+		}
+
+		const total = isMultiReplacer ? prefix + firstLine : prefix + firstLine + suffix;
+
+
+		// 直接用 prefix 拼上 第一行  然后匹配标识符				
+		const symbol = total.match(symbolRegexp)?.[0] || '';
+		refEnd.character = refStart.character + symbol.length;
+		if(symbol && updateName) {
+			reference.name = symbol;
+		}
+		return false;
+	}
+
+	// 改变位置
+	// [~][-]
+	const prevLines = changedEnd.line - changedStart.line;
+	let currLines = 0;
+	let lastLineStart = 0;
+	const reg = /\n/g;
+	let catches: RegExpExecArray;
+	while ((catches = reg.exec(area.text)) !== null) {
+		currLines++;
+		lastLineStart = catches.index + 1;
+	}
+	const lastLineReplacedLen = Math.max(0, area.text.length - lastLineStart);
+	const dtLine = currLines - prevLines;
+	const addLine = () => {
+		
+		refStart.line += dtLine;
+		
+		refEnd.line += dtLine;
+	}			
+	// 和定义值不同行，只需要考虑行变化
+	if(changedEnd.line < refStart.line) {
+		addLine();
+		return false;
+	}
+	addLine();
+
+	// end 和定义同行, end + xxx  = start，因此 dtEnd = dtC
+	// 1. 新数据是单行，则 defineStart.c = changedStart.c + text.length;
+	// 2. 新数据多行，则 defineStart = lastLineReplacedLen
+	const dtC = currLines === 0 ? changedStart.character + area.text.length - changedEnd.character : lastLineReplacedLen - changedEnd.character;
+
+	 
+	refStart.character += dtC; 
+	
+	refEnd.character += dtC;
+	return false;
+}
+
+export const fixHistory = (e, historyList: { uri: Uri, refs: Reference[] }[]) => {
+	const uri: Uri = e.uri;
+	const areas: ChangedArea[] = [...e.areas];
+	const sortFn = (a, b) => isFormer(a.range[0], b.range[0]) ? -1 : 1;
+
+	areas.sort(sortFn);
+	const foundArr  = historyList.filter((it) => it.uri.path === uri.path);
+	if(!foundArr) return;
+	const list: Reference[] = [];
+	for (const found of foundArr) {
+		list.push(...found.refs);
+	}
+	list.sort(sortFn);
+
+	let i = areas.length - 1;
+	let j = list.length - 1;
+	while (i >= 0 && j >= 0) {
+		const change = areas[i];
+		const ref = list[j];
+		const [ changeStart ] = change.range;
+		const [ refStart, refEnd ] = ref.range;
+
+		// 改的位置在所有区域之后则跳过
+		if(isFormer(refStart, changeStart, true)) {
+			// 从 j 往前找相同的标识符都做 rename 处理
+			let p = j-1;
+			for (; p >=0; p--) {
+				const prevRef = list[p];
+				if(eqPos(prevRef.range[0], refStart)) {
+					// fix 同节点
+					fixDefineRange(uri, change, prevRef, true);
+				}
+			}
+			// 说明找到了相同的标识符
+			if(p < j-1) {
+				j = p;
+			}
+			// fix 本节点
+			fixDefineRange(uri, change, ref, true);
+			i--;
+			continue;
+		}
+
+		// 改的位置在 refs 之前，则全部应用
+		for (let p = i; p >= 0; p--) {
+			const change = areas[i];
+			const refMiss = fixDefineRange(uri, change, ref, true);
+			if(refMiss) break;
+		}
+		// 处理完成该 ref 的位置
+		j--;
+	}
 }

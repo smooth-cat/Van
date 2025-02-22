@@ -1,5 +1,8 @@
 import { NavViewProvider } from '../provider';
 
+export function getHistoryListSync(provider: NavViewProvider) {
+  return Array.from(provider.extCtx.workspaceState.get('historyList', []));
+}
 export async function getHistoryList(provider: NavViewProvider) {
   return await provider.extCtx.workspaceState.get('historyList', []);
 }

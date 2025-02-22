@@ -2,7 +2,7 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "%pkg.desc%",
-	"version": "1.0.16",
+	"version": "1.0.17",
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"lint": "eslint . --ext .ts,.tsx",
@@ -38,7 +38,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:van-webview"
+		"onStartupFinished"
 	],
 	"main": "./dist-ext/extension.js",
 	"l10n": "./l10n",

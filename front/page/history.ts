@@ -7,7 +7,7 @@ import { use } from '../runtime/context';
 import { el, fn, text } from '../runtime/el';
 import { onUnmount } from '../runtime/life-circle';
 import { FC } from '../runtime/type';
-import { fixDefineRange, msg } from '../util/var';
+import { msg } from '../util/var';
 import { DetailFile } from './detail-ref-file';
 import './history.less';
 import { bubbleEvent, BubbleLevel } from '../store/bubble-event';
@@ -15,7 +15,7 @@ import { keyBind } from '../store/conf';
 import Empty from '../icon/nav-empty.png';
 import { toRaw, watch } from '@vue/reactivity';
 import { info } from '../components/toast';
-import { eqPos, isFormer } from '../../shared/utils';
+import { eqPos, fixDefineRange, fixHistory, isFormer } from '../../shared/utils';
 import { Loading } from '../components/loading';
 
 export type Props = {
@@ -51,57 +51,7 @@ export const HistoryWrapper: FC<Data, Props> = (data, props) => {
 	});
 
 	const dispose2 = msg.on(MsgType.CodeChanged, (e) => {
-		const uri: Uri = e.uri;
-		const areas: ChangedArea[] = [...e.areas];
-		const sortFn = (a, b) => isFormer(a.range[0], b.range[0]) ? -1 : 1;
-
-		areas.sort(sortFn);
-		const foundArr  = store.historyList.filter((it) => it.uri.path === uri.path);
-		if(!foundArr) return;
-		const list: Reference[] = [];
-		for (const found of foundArr) {
-			list.push(...found.refs);
-		}
-		list.sort(sortFn);
-
-		let i = areas.length - 1;
-		let j = list.length - 1;
-		while (i >= 0 && j >= 0) {
-			const change = areas[i];
-			const ref = list[j];
-			const [ changeStart ] = change.range;
-			const [ refStart, refEnd ] = ref.range;
-
-			// 改的位置在所有区域之后则跳过
-			if(isFormer(refStart, changeStart, true)) {
-				// 从 j 往前找相同的标识符都做 rename 处理
-				let p = j-1;
-				for (; p >=0; p--) {
-					const prevRef = list[p];
-					if(eqPos(prevRef.range[0], refStart)) {
-						// fix 同节点
-						fixDefineRange(uri, change, prevRef, true);
-					}
-				}
-				// 说明找到了相同的标识符
-				if(p < j-1) {
-					j = p;
-				}
-				// fix 本节点
-				fixDefineRange(uri, change, ref, true);
-				i--;
-				continue;
-			}
-
-			// 改的位置在 refs 之前，则全部应用
-			for (let p = i; p >= 0; p--) {
-				const change = areas[i];
-				const refMiss = fixDefineRange(uri, change, ref, true);
-				if(refMiss) break;
-			}
-			// 处理完成该 ref 的位置
-			j--;
-		}
+		fixHistory(e, store.historyList);
 	})
 
 

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as action from './action/index';
 import { MsgType, ReqType } from '../shared/var';
 import { emitSelectOrCursorChange, handleCommandMove } from './event-pre-process/select';
-import { debounce } from '../shared/utils';
+import { debounce, fixHistory } from '../shared/utils';
 import { NavViewProvider } from './provider';
 import { getChangedConf, updateDocCache } from './methods';
 
@@ -31,7 +31,33 @@ export function activate(context: vscode.ExtensionContext) {
 			if(!e.contentChanges?.length) return;
 			updateDocCache(e.document);
 			action.delSymbolsCache(e.document);
-			provider.msg.emit(MsgType.CodeChanged, { uri: e.document.uri, areas: e.contentChanges });
+			const data = { uri: e.document.uri, areas: e.contentChanges };
+			provider.msg.emit(MsgType.CodeChanged, data);
+			if(!provider.isVisible()) {
+				const historyList = action.getHistoryListSync(provider);
+				try {
+					const { areas } = data;
+					const newAreas =areas.map(area => {
+						const { range } = area;
+						const { start, end } = range;
+						const { line } = start;
+						const { line: endLine } = end;
+						const { character } = start;
+						const { character: endCharacter } = end;
+						const newRange = [
+							{ line, character },
+							{ line: endLine, character: endCharacter }
+						]
+						return { ...area, range: newRange };
+					});
+					// @ts-ignore
+					data.areas = newAreas;
+					fixHistory(data, historyList);
+					action.saveHistoryList(historyList, provider);
+				} catch (error) {
+					console.error('后台修改失败', error);
+				}
+			}
 		}),
 		// 删除项目文件
 		workspace.onDidDeleteFiles((e) => {
