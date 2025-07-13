@@ -48,8 +48,7 @@ export class NavViewProvider implements vscode.WebviewViewProvider {
 
 		/*----------------- 通信中心 -----------------*/
 		this.msg = new Message(
-			(msg) => { console.log('编辑器事件', msg);
-			 webview.postMessage(msg)} ,
+			(msg) => webview.postMessage(msg),
 			(fn) => this.disposes.push(webview.onDidReceiveMessage((msg) => fn(msg))),
 		);
 

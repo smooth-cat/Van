@@ -365,3 +365,21 @@ export const fixHistory = (e, historyList: { uri: Uri, refs: Reference[] }[]) =>
 		j--;
 	}
 }
+
+const MaxSpaceCount = 2;
+export function getShotPrefixText(prefix: string) {
+	if(!prefix || prefix.trim() === '') return prefix;
+	let len = prefix.length;
+	let spaceCount = 0;
+	for (let i = len-1; i >= 0; i--) {
+		const char = prefix[i];		
+		if(char === ' ') {
+			spaceCount++;
+			if(spaceCount > MaxSpaceCount) {
+				const shotPrefix = prefix.slice(i);
+				return shotPrefix;
+			}
+		}
+	}
+	return prefix;
+}
