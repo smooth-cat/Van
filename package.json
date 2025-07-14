@@ -2,7 +2,7 @@
 	"name": "van",
 	"displayName": "Van",
 	"description": "%pkg.desc%",
-	"version": "1.0.19",
+	"version": "1.0.20",
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"lint": "eslint . --ext .ts,.tsx",
