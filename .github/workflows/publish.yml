@@ -22,9 +22,9 @@ jobs:
     - name: Get Version
       run: |
         VERSION=$(jq -r '.version' package.json)
-        echo "PKG_VERSION=$VERSION" >> $GITHUB_ENV
+        echo "PKG_VERSION=v$VERSION" >> $GITHUB_ENV
 
-    - name: Setup pnpm
+    - name: Setup Pnpm
       uses: pnpm/action-setup@v4.1.0
       with:
         version: 9.12.3
@@ -49,9 +49,15 @@ jobs:
         VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
       run: npx vsce publish -p $VSCE_TOKEN --no-dependencies
 
-    - name: Create Tag
-      uses: ncipollo/release-action@v1.14.0
+    - name: Configure Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+    - name: Create new tag
+      run: git tag -a $PKG_VERSION -m "release $PKG_VERSION"
+
+    - name: Push Tag
+      run: git push origin $PKG_VERSION
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag: "v$PKG_VERSION"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # 自动注入的权限令牌
